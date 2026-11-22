@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Needs board: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Needs board</h1><p class="fb-lede">What NGOs need, and by when. Hotels can plan their surplus around it.</p></div></div>
+{% if form %}
+<form method="post" novalidate class="fb-panel mb-4">
+  {% csrf_token %}
+  <h2 class="fb-panel__title">Post a need</h2>
+  <div class="row">
+    <div class="col-sm-4 mb-2">{% include "partials/field.html" with f=form.servings_needed %}</div>
+    <div class="col-sm-4 mb-2">{% include "partials/field.html" with f=form.needed_by %}</div>
+    <div class="col-sm-4 mb-2">{% include "partials/field.html" with f=form.notes %}</div>
+  </div>
+  <button type="submit" class="btn btn-fb-primary">Post need</button>
+</form>
+{% endif %}
+{% if needs %}
+  <div class="fb-stack">
+  {% for n in needs %}
+    <div class="fb-panel fb-row fb-row--between">
+      <div>
+        <b style="font-size:1.05rem">{{ n.ngo.name }}</b> needs <b>{{ n.servings_needed }} servings</b> by {{ n.needed_by|date:"d M, H:i" }}
+        {% if n.is_past_due %}<span class="fb-badge fb-badge--dark">Past due</span>{% endif %}
+        {% if n.notes %}<div class="fb-muted">{{ n.notes }}</div>{% endif %}
+        <div class="fb-muted fb-small">{{ n.ngo.service_area }}</div>
+      </div>
+      {% if n.pk in my_need_ids %}<form method="post" action="{% url 'core:need_close' n.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-outline btn-sm">Mark closed</button></form>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="board" title="No open needs" body="NGOs post what they need here so hotels know what to prioritise." %}
+{% endif %}
+{% endblock %}

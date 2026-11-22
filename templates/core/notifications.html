@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Alerts: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Alerts</h1></div></div>
+{% if items %}
+  <ul class="fb-feed">
+    {% for n in items %}
+      <li class="{% if n.was_unread %}is-new{% endif %}">
+        <span class="fb-feed__ico">{% if n.kind == "match" %}{% icon "leaf" 18 %}{% elif n.kind == "new_request" %}{% icon "inbox" 18 %}{% elif n.kind == "confirmed" or n.kind == "collected" %}{% icon "check" 18 %}{% elif n.kind == "lockout" %}{% icon "lock" 18 %}{% elif n.kind == "report" or n.kind == "listing_removed" or n.kind == "cancelled" or n.kind == "rejected" %}{% icon "flag" 18 %}{% else %}{% icon "bell" 18 %}{% endif %}</span>
+        <div>{% if n.link %}<a href="{{ n.link }}"><b style="font-weight:600">{{ n.message }}</b></a>{% else %}<b style="font-weight:600">{{ n.message }}</b>{% endif %}<time>{{ n.created_at|date:"d M, H:i" }}</time></div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  {% include "partials/empty_state.html" with icon="bell" title="No alerts yet" body="You'll see updates here about matches, requests and pickups." %}
+{% endif %}
+{% endblock %}

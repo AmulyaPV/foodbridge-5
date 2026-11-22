@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Account status: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-panel fb-status-card">
+  {% if user.verification_status == Verification.PENDING %}
+    <span class="fb-status-mark fb-status-mark--pending">{% icon "clock" 30 %}</span>
+    <h1>You're in the queue</h1>
+    <p class="mx-auto fb-muted">An admin checks every new account before it can post or request food. This page updates when you refresh it.</p>
+  {% elif user.verification_status == Verification.REJECTED %}
+    <span class="fb-status-mark fb-status-mark--bad">{% icon "flag" 30 %}</span>
+    <h1>This account wasn't approved</h1>
+    <p class="mx-auto"><b>Reason:</b> {{ user.verification_note|default:"No reason was given." }}</p>
+    <p class="mx-auto fb-muted">If you think this is a mistake, contact FoodBridge support with your registration details.</p>
+  {% elif user.verification_status == Verification.SUSPENDED %}
+    <span class="fb-status-mark fb-status-mark--bad">{% icon "lock" 30 %}</span>
+    <h1>This account is suspended</h1>
+    <p class="mx-auto"><b>Reason:</b> {{ user.verification_note|default:"No reason was given." }}</p>
+  {% else %}
+    <span class="fb-status-mark fb-status-mark--ok">{% icon "shield" 30 %}</span>
+    <h1>You're verified</h1>
+    <p><a class="btn btn-fb-primary" href="{% url 'accounts:home' %}">Go to your dashboard</a></p>
+  {% endif %}
+  <div class="mt-3">{% verification_badge user.verification_status %}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Users: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Users</h1></div></div>
+{% include "console/_subnav.html" %}
+<nav class="fb-tabs" aria-label="Filter by role">
+  <a href="{% url 'console:user_list' %}" class="{% if not role_filter %}is-active{% endif %}">Everyone</a>
+  <a href="?role=hotel" class="{% if role_filter == 'hotel' %}is-active{% endif %}">Hotels</a>
+  <a href="?role=ngo" class="{% if role_filter == 'ngo' %}is-active{% endif %}">NGOs</a>
+  <a href="?role=individual" class="{% if role_filter == 'individual' %}is-active{% endif %}">Individuals</a>
+</nav>
+{% if users %}
+  <div class="fb-stack">
+  {% for u in users %}
+    <div class="fb-panel fb-panel--tight fb-row fb-row--between">
+      <div><b>{{ u.display_name }}</b> <span class="fb-badge fb-badge--grey">{{ u.get_role_display }}</span> {% verification_badge u.verification_status %}<div class="fb-muted fb-small">{{ u.email }}</div></div>
+      <div class="fb-row">
+        <a href="{% url 'console:verification_decide' u.pk %}" class="btn btn-fb-outline btn-sm">{% if u.verification_status == "approved" %}Suspend or review{% else %}Review{% endif %}</a>
+        {% if u.verification_status == "suspended" or u.verification_status == "rejected" %}
+          <form method="post" action="{% url 'console:user_reactivate' u.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-primary btn-sm">Reactivate</button></form>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="users" title="No users yet" body="Hotels, NGOs and individuals appear here once they register." %}
+{% endif %}
+{% endblock %}

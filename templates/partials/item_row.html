@@ -1,0 +1,15 @@
+{% load fb_extras %}<div class="fb-itemrow">
+  {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+  <div class="fb-row fb-row--between mb-2">
+    <strong data-row-title>Item {{ index }}</strong>
+    <button type="button" class="btn btn-fb-ghost btn-sm" data-row-remove>Remove</button>
+  </div>
+  <div class="row">
+    <div class="col-md-5 mb-2">{% include "partials/field.html" with f=item_form.name %}</div>
+    <div class="col-6 col-md-3 mb-2">{% include "partials/field.html" with f=item_form.category %}</div>
+    <div class="col-3 col-md-2 mb-2">{% include "partials/field.html" with f=item_form.quantity %}</div>
+    <div class="col-3 col-md-2 mb-2">{% include "partials/field.html" with f=item_form.unit %}</div>
+    <div class="col-md-5 mb-2">{% include "partials/field.html" with f=item_form.cooking_time_note %}</div>
+    <div class="col-md-7 mb-2">{% include "partials/field.html" with f=item_form.allergens_note %}</div>
+  </div>
+</div>

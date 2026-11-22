@@ -1,0 +1,33 @@
+{# The recipient's view of their handover code. Expects `r` (a PickupRequest with .display_code set by the view). #}
+{% with h=r.handover %}
+{% if r.display_code %}
+  <div class="fb-handover">
+    <div class="fb-handover__label">Your pickup code. Show it only when you collect the food.</div>
+    <div class="fb-code" aria-label="Pickup code {{ r.display_code }}">{{ r.display_code }}</div>
+    <div class="fb-handover__meta">
+      <span>Valid for <span class="fb-timer" data-countdown="{{ h.expires_at|date:'U' }}">until {{ h.expires_at|date:'d M, H:i' }}</span></span>
+      <span>Works once</span>
+      {% if h.failed_attempts %}<span style="color:var(--chilli)">{{ h.failed_attempts }} wrong attempt{{ h.failed_attempts|pluralize }} so far</span>{% endif %}
+    </div>
+    <div class="fb-row mt-3">
+      <button type="button" class="btn btn-fb-outline btn-sm" data-copy="{{ r.display_code }}">Copy code</button>
+      {% if h.regenerations_left %}
+        <form method="post" action="{% url 'core:code_regenerate' r.pk %}" onsubmit="return confirm('Issue a new code? The current one will stop working immediately.');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-fb-ghost btn-sm">Get a new code ({{ h.regenerations_left }} left)</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% elif h and r.is_live and h.status == "locked" %}
+  <div class="fb-handover fb-handover--blocked">
+    <div class="fb-handover__label">Code locked</div>
+    <p class="mb-0">Too many wrong codes were entered at the hotel, so this pickup is locked. An admin has been told and will issue you a new code.</p>
+  </div>
+{% elif h and r.is_live and h.is_expired %}
+  <div class="fb-handover fb-handover--expired">
+    <div class="fb-handover__label">Code expired</div>
+    <p class="mb-0">The food passed its safe-until time ({{ h.expires_at|date:'d M, H:i' }}), so this pickup can't be completed.</p>
+  </div>
+{% endif %}
+{% endwith %}

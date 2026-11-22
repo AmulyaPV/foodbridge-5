@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load fb_extras static %}
+{% block title %}Confirm handover: FoodBridge{% endblock %}
+{% block extra_js %}<script src="{% static 'js/handover.js' %}"></script>{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+{% with h=handover %}
+<div class="fb-panel text-center">
+  <h1 class="mb-1">Confirm handover</h1>
+  <p class="fb-muted mx-auto mb-3">{{ pickup_request.recipient_name }} is collecting <strong>{{ pickup_request.amount }} servings</strong>. Ask them to show you their 6-digit pickup code.</p>
+
+  {% if h and h.status == "used" %}
+    <div class="alert alert-success">This handover is complete. The code was used {{ h.used_at|date:"d M, H:i" }}.</div>
+  {% elif not pickup_request.is_live %}
+    <div class="alert alert-secondary">This pickup is {{ pickup_request.get_status_display|lower }}, so there's nothing to hand over.</div>
+  {% elif not h %}
+    <div class="alert alert-warning">This pickup has no code yet.</div>
+  {% elif h.status == "locked" %}
+    <div class="fb-handover fb-handover--blocked text-start">
+      <div class="fb-handover__label">Locked</div>
+      <p class="mb-0">{{ max_attempts }} wrong codes were entered, so this pickup is locked. An admin has been told and will unlock it. Please don't hand over the food until then.</p>
+    </div>
+  {% elif h.is_expired %}
+    <div class="fb-handover fb-handover--expired text-start">
+      <div class="fb-handover__label">Expired</div>
+      <p class="mb-0">The food passed its safe-until time ({{ h.expires_at|date:"d M, H:i" }}). It can't be handed over any more.</p>
+    </div>
+  {% else %}
+    <p class="mb-2"><span class="fb-muted">Code valid for</span> <span class="fb-timer" data-countdown="{{ h.expires_at|date:'U' }}">until {{ h.expires_at|date:"d M, H:i" }}</span></p>
+    <div class="fb-meter" aria-label="{{ h.attempts_left }} of {{ max_attempts }} attempts left">
+      {% for n in attempt_slots %}<span class="{% if n <= h.failed_attempts %}is-used{% endif %}"></span>{% endfor %}
+    </div>
+    <p class="fb-small fb-muted mb-3">{{ h.attempts_left }} of {{ max_attempts }} attempts left</p>
+    <form method="post" novalidate data-code-boxes>
+      {% csrf_token %}
+      <div class="fb-code-boxes" data-code-boxes-holder></div>
+      <div class="mb-3">
+        {{ form.code|bs }}
+        {% if form.code.errors %}<div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-fb-amber btn-lg-tap btn-block" data-disable-on-expiry>Confirm collected</button>
+    </form>
+  {% endif %}
+</div>
+{% if attempts %}
+  <div class="fb-panel fb-panel--tight mt-3">
+    <h2 class="h6 mb-2">Recent attempts</h2>
+    <ul class="fb-attempts">
+      {% for a in attempts %}<li><span>{{ a.created_at|date:"d M, H:i:s" }}</span><span class="fb-outcome--{{ a.outcome }}">{{ a.get_outcome_display }}</span></li>{% endfor %}
+    </ul>
+  </div>
+{% endif %}
+<p class="mt-3"><a href="{% url 'core:hotel_requests' %}">Back to requests</a></p>
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Repost listing: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Repost with the same items</h1><p class="fb-lede">This copies {{ original.items.count }} item{{ original.items.count|pluralize }} from listing #{{ original.pk }}. Set the new times and it's live.</p></div></div>
+<form method="post" novalidate class="fb-panel">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>{% endif %}
+  {% for f in form %}<div class="mb-3">{% include "partials/field.html" with f=f %}</div>{% endfor %}
+  <div class="fb-row">
+    <button type="submit" class="btn btn-fb-primary btn-lg-tap">Repost</button>
+    <a class="btn btn-fb-ghost" href="{% url 'core:hotel_dashboard' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

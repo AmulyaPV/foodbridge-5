@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Review report: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Review report</h1><p class="fb-lede">{{ report.get_reason_display }}</p></div></div>
+<div class="fb-panel mb-3">
+  <dl class="fb-kv">
+    <dt>Listing</dt><dd><a href="{% url 'core:listing_detail' report.listing_id %}">{{ report.listing.display_title }}</a> · {{ report.listing.hotel.name }} {% listing_status_badge report.listing %}</dd>
+    <dt>Reported by</dt><dd>{{ report.reporter.display_name }} ({{ report.reporter.get_role_display }})</dd>
+    <dt>Details</dt><dd>{{ report.details|default:"No details given." }}</dd>
+    <dt>Storage notes</dt><dd>{{ report.listing.storage_notes|default:"None" }}</dd>
+  </dl>
+</div>
+<form method="post" class="fb-panel">
+  {% csrf_token %}
+  <h2 class="fb-panel__title">Your decision</h2>
+  <div class="fb-segment mb-3">{% for choice in form.decision %}<label>{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% endfor %}</div>
+  {% if form.decision.errors %}<div class="invalid-feedback d-block mb-2">{{ form.decision.errors.0 }}</div>{% endif %}
+  <div class="mb-3">{% include "partials/field.html" with f=form.note %}</div>
+  <div class="fb-row"><button type="submit" class="btn btn-fb-primary">Save decision</button><a href="{% url 'console:moderation' %}" class="btn btn-fb-ghost">Back</a></div>
+</form>
+{% endblock %}

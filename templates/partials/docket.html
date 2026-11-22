@@ -1,0 +1,25 @@
+{% load fb_extras %}{# One listing as a kitchen docket. Expects `listing` (with .distance_km optionally set). #}
+<article class="fb-docket">
+  {% include "partials/clockbar.html" with listing=listing %}
+  <div class="fb-docket__body">
+    <div class="fb-docket__top">
+      <div>
+        <h3 class="fb-docket__title"><a href="{% url 'core:listing_detail' listing.pk %}">{{ listing.display_title }}</a></h3>
+        <p class="fb-docket__from">
+          <span>{{ listing.hotel.name }}</span>
+          {% if listing.distance_km is not None %}<span>{% icon "pin" 15 %}{{ listing.distance_km|floatformat:1 }} km away</span>{% endif %}
+          <span>{% icon "clock" 15 %}collect by {{ listing.pickup_window_end|date:"H:i" }}</span>
+        </p>
+      </div>
+      <div class="fb-docket__servings"><b>{{ listing.servings_available }}</b><small>servings left</small></div>
+    </div>
+    <div class="fb-docket__chips">
+      {% for value, label in listing.category_choices %}<span class="fb-chip fb-chip--{{ value }}"><i></i>{{ label }}</span>{% endfor %}
+      {% if listing.first_look_active %}<span class="fb-chip">First look</span>{% endif %}
+    </div>
+  </div>
+  <div class="fb-docket__stub">
+    {% include "partials/clock.html" with listing=listing %}
+    <a href="{% url 'core:listing_detail' listing.pk %}" class="btn btn-fb-amber btn-sm">View and request</a>
+  </div>
+</article>

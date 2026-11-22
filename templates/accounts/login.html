@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Log in: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-auth">
+  <div class="fb-auth__side">
+    <h1>Welcome back.</h1>
+    <ul>
+      <li>{% icon "clock" 20 %}<span>See what's safe to collect right now, with the clock running.</span></li>
+      <li>{% icon "lock" 20 %}<span>Pickups are proven with a one-time code, so food reaches the right hands.</span></li>
+      <li>{% icon "check" 20 %}<span>Every donation is recorded for both sides.</span></li>
+    </ul>
+  </div>
+  <div class="fb-panel">
+    <h2 class="mb-3">Log in</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>{% endif %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.username.id_for_label }}">Email</label>
+        {{ form.username|bs }}
+        {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password|bs }}
+        {% if form.password.errors %}<div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>{% endif %}
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-fb-primary btn-lg-tap btn-block">Log in</button>
+    </form>
+    <p class="mt-3 mb-0 fb-muted">New here? <a href="{% url 'accounts:register' %}">Create an account</a>.</p>
+  </div>
+</div>
+{% endblock %}

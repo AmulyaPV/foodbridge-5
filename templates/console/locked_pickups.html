@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Locked pickups: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Locked pickups</h1><p class="fb-lede">A pickup locks after 5 wrong code entries. Unlocking resets the counter and gives the recipient a brand-new code.</p></div></div>
+{% include "console/_subnav.html" %}
+{% if locked %}
+  <div class="fb-stack">
+  {% for h in locked %}{% with p=h.pickup_request %}
+    <div class="fb-panel">
+      <div class="fb-row fb-row--between">
+        <div><b>Pickup #{{ p.pk }}</b> · {{ p.listing.hotel.name }} &rarr; {{ p.recipient_name }} · {{ p.amount }} servings
+          <div class="fb-muted fb-small">Locked {{ h.locked_at|date:"d M, H:i" }} · code expires {{ h.expires_at|date:"d M, H:i" }}</div></div>
+        <form method="post" action="{% url 'console:unlock_pickup' p.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-amber btn-sm">Unlock and issue new code</button></form>
+      </div>
+      <details class="mt-2"><summary>Attempt history ({{ h.attempts.all|length }})</summary>
+        <ul class="fb-attempts mt-2">{% for a in h.attempts.all %}<li><span>{{ a.created_at|date:"d M, H:i:s" }} · {{ a.actor.email|default:"unknown" }} · {{ a.ip_address|default:"no IP" }}</span><span class="fb-outcome--{{ a.outcome }}">{{ a.get_outcome_display }}</span></li>{% endfor %}</ul>
+      </details>
+    </div>
+  {% endwith %}{% endfor %}
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="lock" title="Nothing locked" body="A pickup shows up here after 5 wrong code attempts." %}
+{% endif %}
+{% endblock %}

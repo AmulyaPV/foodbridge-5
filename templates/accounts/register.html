@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load fb_extras static %}
+{% block title %}{{ role_label }} sign-up: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>{{ role_label }} sign-up</h1><p class="fb-lede">An admin checks every new account before it can post or request food.</p></div></div>
+<form method="post" enctype="multipart/form-data" novalidate id="register-form">
+  {% csrf_token %}
+  <div class="fb-panel fb-form-section">
+    <h2>Your login</h2>
+    <p>You'll use your email and password to log in.</p>
+    <div class="row">
+      <div class="col-12 mb-3">
+        <label class="form-label" for="{{ account_form.email.id_for_label }}">Email</label>
+        {{ account_form.email|bs }}
+        {% if account_form.email.errors %}<div class="invalid-feedback d-block">{{ account_form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-sm-6 mb-3">
+        <label class="form-label" for="{{ account_form.password1.id_for_label }}">Password</label>
+        {{ account_form.password1|bs }}
+        {% if account_form.password1.errors %}<div class="invalid-feedback d-block">{{ account_form.password1.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-sm-6 mb-3">
+        <label class="form-label" for="{{ account_form.password2.id_for_label }}">Confirm password</label>
+        {{ account_form.password2|bs }}
+        {% if account_form.password2.errors %}<div class="invalid-feedback d-block">{{ account_form.password2.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="fb-panel fb-form-section">
+    <h2>{% if role_key == "individual" %}About you{% else %}About your {% if role_key == "hotel" %}kitchen{% else %}organisation{% endif %}{% endif %}</h2>
+    <p>{% if role_key == "hotel" %}This is what recipients and admins see.{% elif role_key == "ngo" %}Admins use these details to verify you.{% else %}An admin uses these details to verify you. Only hotels you request from see your name and phone.{% endif %}</p>
+    <div class="row">
+      {% for f in profile_form %}
+        {% if f.is_hidden %}{{ f }}{% else %}
+          <div class="{% if f.name == 'address' %}col-12{% else %}col-sm-6{% endif %} mb-3">
+            <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+            {{ f|bs }}
+            {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+            {% if f.errors %}<div class="invalid-feedback d-block">{{ f.errors.0 }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="fb-panel fb-form-section">
+    <h2>Map pin</h2>
+    <p>{% if MAPS_ENABLED %}Search or click the map to place your pin. It makes distances and travel times accurate.{% else %}Optional. Your typed address is enough to register, and an admin can add the pin later.{% endif %}</p>
+    <div id="fb-pin-map" class="fb-map d-flex align-items-center justify-content-center fb-muted">{% if MAPS_ENABLED %}Loading map{% else %}Map pin picker{% endif %}</div>
+    {% if not MAPS_ENABLED %}<p class="fb-map-note mt-2 mb-0">No Google Maps key is configured, so dropping a pin isn't available yet.</p>{% endif %}
+  </div>
+
+  <button type="submit" class="btn btn-fb-primary btn-lg-tap btn-block">Create account</button>
+</form>
+{% endblock %}
+{% block extra_js %}
+{% if MAPS_ENABLED %}
+  <script src="{% static 'js/maps-pin.js' %}"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places&callback=fbInitPinMap" async defer></script>
+{% endif %}
+{% endblock %}

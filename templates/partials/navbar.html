@@ -1,0 +1,39 @@
+{% load fb_extras %}{% with url=request.resolver_match.url_name %}
+<header class="fb-topbar">
+  <div class="fb-topbar__in">
+    <a class="fb-brand" href="{% if user.is_authenticated %}{% url 'accounts:home' %}{% else %}{% url 'core:landing' %}{% endif %}">{% include "partials/logo.html" %}<span>FoodBridge</span></a>
+
+    {% if user.is_authenticated %}
+      <nav class="fb-nav" aria-label="Main">
+        {% if user.is_hotel and user.is_verified %}
+          <a href="{% url 'core:hotel_dashboard' %}" class="{% if url == 'hotel_dashboard' or url == 'listing_detail' or url == 'listing_edit' %}is-active{% endif %}">My listings</a>
+          <a href="{% url 'core:hotel_requests' %}" class="{% if url == 'hotel_requests' or url == 'confirm_handover' or url == 'request_reject' %}is-active{% endif %}">Requests{% if pending_requests %} <span class="fb-count">{{ pending_requests }}</span>{% endif %}</a>
+          <a href="{% url 'core:hotel_history' %}" class="{% if url == 'hotel_history' %}is-active{% endif %}">History</a>
+          <a href="{% url 'core:needs_board' %}" class="{% if url == 'needs_board' %}is-active{% endif %}">Needs board</a>
+          <a href="{% url 'core:impact_certificate' %}" class="{% if url == 'impact_certificate' %}is-active{% endif %}">Impact</a>
+        {% elif user.is_recipient and user.is_verified %}
+          <a href="{% url 'core:ngo_dashboard' %}" class="{% if url == 'ngo_dashboard' or url == 'listing_detail' %}is-active{% endif %}">Find food</a>
+          <a href="{% url 'core:my_requests' %}" class="{% if url == 'my_requests' %}is-active{% endif %}">My requests</a>
+          {% if user.is_ngo %}<a href="{% url 'core:needs_board' %}" class="{% if url == 'needs_board' %}is-active{% endif %}">Needs board</a>{% endif %}
+        {% elif user.is_admin_role %}
+          <a href="{% url 'console:dashboard' %}" class="{% if url == 'dashboard' %}is-active{% endif %}">Overview</a>
+          <a href="{% url 'console:verification_queue' %}" class="{% if url == 'verification_queue' or url == 'verification_decide' %}is-active{% endif %}">Verification{% if admin_pending %} <span class="fb-count">{{ admin_pending }}</span>{% endif %}</a>
+          <a href="{% url 'console:moderation' %}" class="{% if url == 'moderation' or url == 'moderation_decide' or url == 'listings' or url == 'listing_remove' %}is-active{% endif %}">Listings{% if admin_open_reports %} <span class="fb-count">{{ admin_open_reports }}</span>{% endif %}</a>
+          <a href="{% url 'console:user_list' %}" class="{% if url == 'user_list' %}is-active{% endif %}">Users</a>
+          <a href="{% url 'console:reports' %}" class="{% if url == 'reports' %}is-active{% endif %}">Reports</a>
+        {% endif %}
+      </nav>
+      <div class="fb-account">
+        <span class="fb-who fb-hide-sm"><b>{{ user.display_name }}</b></span>
+        <a href="{% url 'core:notifications' %}" class="fb-hide-sm" style="color:#d5dbf3;text-decoration:none;padding:.5rem .8rem;border-radius:10px;display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.95rem" aria-label="Alerts{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">{% icon "bell" 18 %}Alerts{% if unread_notifications %} <span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">{% csrf_token %}<button type="submit">{% icon "out" 18 %}<span class="fb-hide-sm">Log out</span><span class="visually-hidden d-md-none">Log out</span></button></form>
+      </div>
+    {% else %}
+      <div class="fb-guest">
+        <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-fb-ghost" style="color:#d5dbf3">Log in</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-fb-amber">Sign up</a>
+      </div>
+    {% endif %}
+  </div>
+</header>
+{% endwith %}

@@ -1,0 +1,20 @@
+
+digraph A { rankdir=TB; fontname="Helvetica"; nodesep=0.4; ranksep=0.55;
+ node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#1B2650", fillcolor="#EDF0EE"];
+ edge [color="#566083", fontsize=9, fontname="Helvetica"];
+ U [label="Users: Hotel / Restaurant  |  NGO  |  Individual recipient  |  Administrator", fillcolor="#FCEFC9"];
+ W [label="Web interface\n(HTML templates, CSS, Bootstrap 5, small JavaScript)\nSafe-Until Clock, filters, dashboards, notifications"];
+ R [label="Django URL routing and role-based access\n(login, hotel / recipient / admin decorators)"];
+ subgraph cluster_app { label="Application logic (Django views and services)"; fontname="Helvetica"; color="#CDD5D1"; style=rounded;
+   L [label="Food listings\n(items, servings, storage notes,\npickup location, deadline)"];
+   Q [label="Donation requests\n(request, confirm, on the way,\ncollected, cancel, expire)"];
+   H [label="Secure handover code\n(one-time, attempt limit)"];
+   M [label="Smart Match,\nreliability score,\ndistance and travel time"];
+   A [label="Admin console\n(verification, listing reports and removal,\nreports, activity log, locked pickups)"];
+   N [label="In-site notifications,\nNeeds Board,\nImpact Certificate"];
+ }
+ D [label="SQLite database\nUsers, profiles, listings, items, requests,\nhandover codes, reports, notifications, activity log", shape=cylinder, fillcolor="#DCEEE3"];
+ U -> W -> R; R -> L; R -> Q; R -> H; R -> M; R -> A; R -> N;
+ L -> D [dir=both]; Q -> D [dir=both]; H -> D [dir=both]; M -> D [dir=both]; A -> D [dir=both]; N -> D [dir=both];
+ D -> W [label="updated pages and status", style=dashed, constraint=false];
+}

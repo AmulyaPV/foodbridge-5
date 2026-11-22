@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Review {{ target.display_name }}: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>{{ target.display_name }}</h1><p class="fb-lede">{{ target.get_role_display }} · {{ target.email }} {% verification_badge target.verification_status %}</p></div></div>
+<div class="fb-panel mb-3">
+  {% with profile=target.profile %}{% if profile %}
+    <dl class="fb-kv">
+      <dt>Contact</dt><dd>{{ profile.contact_person }} · {{ profile.phone }}</dd>
+      <dt>Address</dt><dd>{{ profile.address }}</dd>
+      <dt>Map pin</dt><dd>{% if profile.has_pin %}{{ profile.latitude|floatformat:4 }}, {{ profile.longitude|floatformat:4 }}{% else %}Not set{% endif %}</dd>
+      {% if target.is_hotel %}
+        <dt>Licence / FSSAI</dt><dd>{{ profile.fssai_number }}</dd>
+      {% elif target.is_ngo %}
+        <dt>Registration no.</dt><dd>{{ profile.registration_number }}</dd>
+        <dt>Daily capacity</dt><dd>{{ profile.daily_capacity }} servings</dd>
+        <dt>Service area</dt><dd>{{ profile.service_area }}</dd>
+        <dt>Certificate</dt><dd>{% if profile.certificate %}<a href="{{ profile.certificate.url }}" target="_blank" rel="noopener">Open uploaded file</a>{% else %}None uploaded{% endif %}</dd>
+      {% elif target.is_individual %}
+        <dt>Household</dt><dd>{{ profile.household_size }} {{ profile.household_size|pluralize:"person,people" }}</dd>
+        <dt>Supporting document</dt><dd>{% if profile.supporting_document %}<a href="{{ profile.supporting_document.url }}" target="_blank" rel="noopener">Open uploaded file</a>{% else %}None uploaded{% endif %}</dd>
+      {% endif %}
+    </dl>
+  {% endif %}{% endwith %}
+</div>
+<form method="post" class="fb-panel">
+  {% csrf_token %}
+  <h2 class="fb-panel__title">Your decision</h2>
+  <div class="fb-segment mb-3">
+    {% for choice in form.decision %}<label>{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% endfor %}
+  </div>
+  {% if form.decision.errors %}<div class="invalid-feedback d-block mb-2">{{ form.decision.errors.0 }}</div>{% endif %}
+  <div class="mb-3">{% include "partials/field.html" with f=form.note %}</div>
+  <div class="fb-row"><button type="submit" class="btn btn-fb-primary">Save decision</button><a href="{% url 'console:verification_queue' %}" class="btn btn-fb-ghost">Back</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% load fb_extras %}{# The Safe-Until Clock as text. Expects `listing`. Optional: big=1 #}
+<span class="fb-clock{% if big %} fb-clock--xl{% endif %}" data-clock data-end="{{ listing.safe_until|epoch }}" data-state="{{ listing.seconds_until_unsafe|clock_state }}">
+  <span class="fb-clock__label" data-live="safe for">{% if listing.seconds_until_unsafe > 0 %}safe for{% endif %}</span>
+  <span class="fb-clock__time">{{ listing.seconds_until_unsafe|hms }}</span>
+</span>

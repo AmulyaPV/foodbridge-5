@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}History: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Donation history</h1><p class="fb-lede">Completed, cancelled and expired donations.</p></div><a href="{% url 'core:impact_certificate' %}" class="btn btn-fb-outline btn-sm">Impact certificate</a></div>
+<nav class="fb-tabs" aria-label="Filter history">
+  <a href="?show=all" class="{% if show == 'all' %}is-active{% endif %}">All <span class="fb-tab-n">{{ counts.all }}</span></a>
+  <a href="?show=completed" class="{% if show == 'completed' %}is-active{% endif %}">Completed <span class="fb-tab-n">{{ counts.completed }}</span></a>
+  <a href="?show=cancelled" class="{% if show == 'cancelled' %}is-active{% endif %}">Cancelled <span class="fb-tab-n">{{ counts.cancelled }}</span></a>
+  <a href="?show=expired" class="{% if show == 'expired' %}is-active{% endif %}">Expired <span class="fb-tab-n">{{ counts.expired }}</span></a>
+</nav>
+{% if rows %}
+  <div class="fb-panel fb-table-wrap" style="padding:0.5rem 0.75rem">
+    <table class="fb-table">
+      <thead><tr><th>Date</th><th>Food</th><th>Recipient</th><th class="num">Servings</th><th>Outcome</th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td class="fb-muted" style="white-space:nowrap">{{ row.when|date:"d M Y" }}</td>
+          <td><a href="{% url 'core:listing_detail' row.listing_id %}">{{ row.title }}</a>{% if row.note %}<div class="fb-muted fb-small">{{ row.note }}</div>{% endif %}</td>
+          <td>{{ row.who }}</td>
+          <td class="num">{{ row.servings }}</td>
+          <td>{% if row.status == "collected" %}<span class="fb-badge fb-badge--green">Collected</span>{% elif row.status == "expired" %}<span class="fb-badge fb-badge--dark">Expired</span>{% elif row.status == "removed" %}<span class="fb-badge fb-badge--red">Removed</span>{% elif row.status == "rejected" %}<span class="fb-badge fb-badge--red">Declined</span>{% else %}<span class="fb-badge fb-badge--dark">Cancelled</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="history" title="Nothing here yet" body="Finished donations appear here, grouped by how they ended." %}
+{% endif %}
+{% endblock %}

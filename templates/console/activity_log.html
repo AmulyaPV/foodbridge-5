@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Activity log: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Activity log</h1><p class="fb-lede">The latest 300 recorded actions.</p></div></div>
+{% include "console/_subnav.html" %}
+{% if entries %}
+  <div class="fb-panel"><ul class="fb-feed" style="margin:0">
+    {% for e in entries %}<li style="border:0;border-bottom:1px solid var(--line-soft);border-radius:0;margin:0;padding:.6rem 0;background:none"><div>{{ e.message }}<time>{{ e.created_at|date:"d M, H:i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</time></div></li>{% endfor %}
+  </ul></div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="pulse" title="No activity yet" body="Key actions across FoodBridge are logged here." %}
+{% endif %}
+{% endblock %}

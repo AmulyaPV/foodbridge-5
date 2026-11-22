@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}{{ title }}: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>{{ title }}</h1>{% if intro %}<p class="fb-lede">{{ intro }}</p>{% endif %}</div></div>
+<form method="post" novalidate class="fb-panel">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.reason.id_for_label }}">Reason</label>
+    {{ form.reason|bs }}
+    {% if form.reason.errors %}<div class="invalid-feedback d-block">{{ form.reason.errors.0 }}</div>{% endif %}
+  </div>
+  <div class="fb-row">
+    <button type="submit" class="btn btn-fb-danger btn-lg-tap">{{ cta }}</button>
+    <a class="btn btn-fb-ghost" href="{% url back_url|default:'accounts:home' %}">Go back</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}All listings: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>All listings</h1><p class="fb-lede">Remove anything that shouldn't be on the board. The hotel and anyone with an open request are told.</p></div></div>
+{% include "console/_subnav.html" %}
+<form method="get" class="fb-filters"><div class="row g-2 align-items-end">
+  <div class="col-md-5"><label class="form-label" for="l-q">Hotel or food name</label><input id="l-q" class="form-control" type="search" name="q" value="{{ q }}"></div>
+  <div class="col-md-4"><label class="form-label" for="l-s">Status</label><select id="l-s" class="form-select" name="status"><option value="">Any</option>{% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><button class="btn btn-fb-primary w-100" type="submit">Filter</button></div>
+</div></form>
+{% if listings %}
+  <div class="fb-panel fb-table-wrap" style="padding:.5rem .75rem"><table class="fb-table">
+    <thead><tr><th>#</th><th>Food</th><th>Hotel</th><th class="num">Servings</th><th>Status</th><th>Reports</th><th></th></tr></thead>
+    <tbody>
+    {% for l in listings %}
+      <tr>
+        <td>{{ l.pk }}</td>
+        <td><a href="{% url 'core:listing_detail' l.pk %}">{{ l.display_title }}</a><div class="fb-muted fb-small">posted {{ l.created_at|date:"d M, H:i" }}</div></td>
+        <td>{{ l.hotel.name }}</td>
+        <td class="num">{{ l.servings_available }} / {{ l.total_servings }}</td>
+        <td>{% listing_status_badge l %}</td>
+        <td>{% with n=l.reports.all|length %}{% if n %}<span class="fb-badge fb-badge--red">{{ n }}</span>{% else %}<span class="fb-muted">0</span>{% endif %}{% endwith %}</td>
+        <td>{% if l.status == "posted" or l.status == "fulfilled" %}<a href="{% url 'console:listing_remove' l.pk %}" class="btn btn-fb-danger-outline btn-sm">Remove</a>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="list" title="No listings found" body="Try a different status or search." %}
+{% endif %}
+{% endblock %}

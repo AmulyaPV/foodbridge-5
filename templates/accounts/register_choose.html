@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Sign up: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Who's signing up?</h1><p class="fb-lede">An admin checks every account before it can post or request food.</p></div></div>
+<div class="fb-doors" style="grid-template-columns:1fr;">
+  <div class="fb-door"><span class="fb-door__ico">{% icon "leaf" 24 %}</span><h3>Hotel or restaurant</h3><p>You have safe, unused food and want it to reach someone. You'll need your FSSAI or licence number.</p><a class="btn btn-fb-primary" href="{% url 'accounts:register_hotel' %}">Register as a donor</a></div>
+  <div class="fb-door"><span class="fb-door__ico">{% icon "users" 24 %}</span><h3>NGO or community group</h3><p>You collect and distribute food. You'll need your registration number and daily capacity.</p><a class="btn btn-fb-primary" href="{% url 'accounts:register_ngo' %}">Register an NGO</a></div>
+  <div class="fb-door"><span class="fb-door__ico">{% icon "home" 24 %}</span><h3>Individual or household</h3><p>You need food and aren't part of an NGO. You can request up to 10 servings at a time.</p><a class="btn btn-fb-primary" href="{% url 'accounts:register_individual' %}">Sign up as an individual</a></div>
+</div>
+<p class="fb-muted">Already registered? <a href="{% url 'accounts:login' %}">Log in</a>.</p>
+{% endblock %}

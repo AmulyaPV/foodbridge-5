@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Reports on listings: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Reports on listings</h1><p class="fb-lede">Reports from hotels, NGOs and individuals. Remove the listing or dismiss the report.</p></div></div>
+{% include "console/_subnav.html" %}
+<nav class="fb-tabs"><a href="?show=open" class="{% if show == 'open' %}is-active{% endif %}">Open</a><a href="?show=closed" class="{% if show == 'closed' %}is-active{% endif %}">Reviewed</a></nav>
+{% if reports %}
+  <div class="fb-stack">
+  {% for r in reports %}
+    <div class="fb-panel">
+      <div class="fb-row fb-row--between">
+        <div>
+          <b><a href="{% url 'core:listing_detail' r.listing_id %}">{{ r.listing.display_title }}</a></b> from {{ r.listing.hotel.name }}
+          <div class="mt-1"><span class="fb-badge fb-badge--red">{{ r.get_reason_display }}</span> {% listing_status_badge r.listing %}</div>
+          {% if r.details %}<p class="mb-0 mt-2">&ldquo;{{ r.details }}&rdquo;</p>{% endif %}
+          <div class="fb-muted fb-small mt-1">Reported by {{ r.reporter.display_name }} on {{ r.created_at|date:"d M, H:i" }}{% if r.resolved_by %} · {{ r.get_status_display }} by {{ r.resolved_by.display_name }}{% if r.resolution_note %}: {{ r.resolution_note }}{% endif %}{% endif %}</div>
+        </div>
+        {% if r.status == "open" %}<a href="{% url 'console:moderation_decide' r.pk %}" class="btn btn-fb-primary btn-sm">Review</a>{% else %}<span class="fb-badge fb-badge--dark">{{ r.get_status_display }}</span>{% endif %}
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="flag" title="No reports here" body="When someone flags a listing it appears in this queue." %}
+{% endif %}
+{% endblock %}

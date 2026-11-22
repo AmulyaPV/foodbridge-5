@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Impact certificate: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-row fb-row--between fb-no-print mb-3">
+  <a href="{% url 'core:hotel_history' %}">Back to history</a>
+  <button onclick="window.print()" class="btn btn-fb-primary">Print or save as PDF</button>
+</div>
+<div class="fb-certificate">
+  <p class="fb-muted mb-1">FoodBridge impact certificate</p>
+  <h1>{{ hotel.name }}</h1>
+  <p class="fb-muted mx-auto">Generated {{ generated_at|date:"d M Y, H:i" }} from donations recorded on FoodBridge.</p>
+  <div class="fb-certificate__nums">
+    <div><b>{{ total_servings }}</b><span>servings donated</span></div>
+    <div><b>{{ ngos_served }}</b><span>recipients served</span></div>
+    <div><b>{{ pickups }}</b><span>pickups completed</span></div>
+  </div>
+  <p class="fb-muted fb-small mx-auto">Estimated CO2e avoided: <strong>{{ co2_estimate_kg }} kg</strong>. This is an estimate: {{ total_servings }} servings × {{ co2_kg_per_serving }} kg CO2e per serving, an average for food waste that is eaten instead of landfilled. Real impact varies by food type and local waste processing.</p>
+</div>
+{% endblock %}

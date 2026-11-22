@@ -1,0 +1,12 @@
+{% load fb_extras %}{% with url=request.resolver_match.url_name %}
+<nav class="fb-subnav" aria-label="Admin sections">
+  <a href="{% url 'console:dashboard' %}" class="{% if url == 'dashboard' %}is-active{% endif %}">{% icon "home" 16 %}Overview</a>
+  <a href="{% url 'console:verification_queue' %}" class="{% if url == 'verification_queue' or url == 'verification_decide' %}is-active{% endif %}">{% icon "shield" 16 %}Verification{% if admin_pending %}<span class="fb-count">{{ admin_pending }}</span>{% endif %}</a>
+  <a href="{% url 'console:moderation' %}" class="{% if url == 'moderation' or url == 'moderation_decide' %}is-active{% endif %}">{% icon "flag" 16 %}Reports on listings{% if admin_open_reports %}<span class="fb-count">{{ admin_open_reports }}</span>{% endif %}</a>
+  <a href="{% url 'console:listings' %}" class="{% if url == 'listings' or url == 'listing_remove' %}is-active{% endif %}">{% icon "list" 16 %}All listings</a>
+  <a href="{% url 'console:user_list' %}" class="{% if url == 'user_list' %}is-active{% endif %}">{% icon "users" 16 %}Users</a>
+  <a href="{% url 'console:locked_pickups' %}" class="{% if url == 'locked_pickups' %}is-active{% endif %}">{% icon "lock" 16 %}Locked pickups</a>
+  <a href="{% url 'console:reports' %}" class="{% if url == 'reports' %}is-active{% endif %}">{% icon "chart" 16 %}Reports</a>
+  <a href="{% url 'console:activity_log' %}" class="{% if url == 'activity_log' %}is-active{% endif %}">{% icon "pulse" 16 %}Activity</a>
+</nav>
+{% endwith %}

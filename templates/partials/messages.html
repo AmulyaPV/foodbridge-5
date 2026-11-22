@@ -1,0 +1,11 @@
+{% load fb_extras %}{% if messages %}
+<div class="fb-flashes" role="status" aria-live="polite">
+  {% for message in messages %}
+    <div class="fb-flash fb-flash--{{ message.tags|default:'info' }}">
+      {% if message.tags == 'success' %}{% icon "check" 18 %}{% elif message.tags == 'danger' %}{% icon "flag" 18 %}{% else %}{% icon "pulse" 18 %}{% endif %}
+      <div>{{ message }}</div>
+      <button type="button" aria-label="Dismiss message">&times;</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Admin overview: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Admin overview</h1></div></div>
+{% include "console/_subnav.html" %}
+<div class="fb-strip">
+  <div class="{% if pending_count %}is-attn{% endif %}"><b>{{ pending_count }}</b><span><a href="{% url 'console:verification_queue' %}">waiting for verification</a></span></div>
+  <div class="{% if open_reports %}is-attn{% endif %}"><b>{{ open_reports }}</b><span><a href="{% url 'console:moderation' %}">open listing reports</a></span></div>
+  <div class="{% if locked_count %}is-attn{% endif %}"><b>{{ locked_count }}</b><span><a href="{% url 'console:locked_pickups' %}">locked pickups</a></span></div>
+  <div><b>{{ live_listings }}</b><span>live listings</span></div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-4"><div class="fb-panel fb-panel--tight"><b class="fb-display" style="font-size:1.6rem">{{ hotel_count }}</b><div class="fb-muted fb-small">verified hotels</div></div></div>
+  <div class="col-4"><div class="fb-panel fb-panel--tight"><b class="fb-display" style="font-size:1.6rem">{{ ngo_count }}</b><div class="fb-muted fb-small">verified NGOs</div></div></div>
+  <div class="col-4"><div class="fb-panel fb-panel--tight"><b class="fb-display" style="font-size:1.6rem">{{ individual_count }}</b><div class="fb-muted fb-small">verified individuals</div></div></div>
+</div>
+<section class="fb-panel">
+  <h2 class="fb-panel__title">Recent activity</h2>
+  {% if recent_activity %}
+    <ul class="fb-feed" style="margin:0">
+      {% for entry in recent_activity %}<li style="border:0;border-bottom:1px solid var(--line-soft);border-radius:0;margin:0;padding:.6rem 0;background:none"><div><span>{{ entry.message }}</span><time>{{ entry.created_at|date:"d M, H:i" }}{% if entry.actor %} · {{ entry.actor.display_name }}{% endif %}</time></div></li>{% endfor %}
+    </ul>
+  {% else %}
+    {% include "partials/empty_state.html" with icon="pulse" title="Nothing yet" body="Activity shows up here as hotels, recipients and admins use FoodBridge." %}
+  {% endif %}
+</section>
+{% endblock %}

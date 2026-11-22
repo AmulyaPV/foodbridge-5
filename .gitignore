@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+db.sqlite3
+media/*
+!media/.gitkeep
+staticfiles/
+.DS_Store
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+venv_old/
+venv*/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local databases
+*.sqlite3
+db.sqlite3
+
+# Generated files
+staticfiles/
+media/
+
+# macOS
+.DS_Store

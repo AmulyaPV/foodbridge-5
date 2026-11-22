@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Report a listing: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Report this listing</h1><p class="fb-lede">{{ listing.display_title }} from {{ listing.hotel.name }}. An admin reviews every report and can remove the listing.</p></div></div>
+<form method="post" novalidate class="fb-panel">
+  {% csrf_token %}
+  <div class="mb-3">
+    <div class="form-label">{{ form.reason.label }}</div>
+    <div class="fb-segment" style="flex-direction:column;align-items:stretch">
+      {% for choice in form.reason %}<label>{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% endfor %}
+    </div>
+    {% if form.reason.errors %}<div class="invalid-feedback d-block">{{ form.reason.errors.0 }}</div>{% endif %}
+  </div>
+  <div class="mb-3">{% include "partials/field.html" with f=form.details %}</div>
+  <div class="fb-row">
+    <button type="submit" class="btn btn-fb-danger btn-lg-tap">Send report</button>
+    <a class="btn btn-fb-ghost" href="{% url 'core:listing_detail' listing.pk %}">Go back</a>
+  </div>
+</form>
+{% endblock %}

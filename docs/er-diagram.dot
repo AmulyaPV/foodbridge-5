@@ -1,0 +1,21 @@
+
+digraph ER { rankdir=LR; fontname="Helvetica"; bgcolor="white"; nodesep=0.35; ranksep=0.9;
+ node [shape=record, fontname="Helvetica", fontsize=10, style=filled, fillcolor="#EDF0EE", color="#1B2650"];
+ edge [fontname="Helvetica", fontsize=9, color="#566083"];
+ USER [label="{USER|user_id (PK)\lusername / email\lpassword (hashed)\lrole: hotel, ngo, individual, admin\lverification_status\l}", fillcolor="#FCEFC9"];
+ HOTEL [label="{HOTEL|hotel_id (PK)\luser_id (FK)\lname\lphone\laddress\lfssai_number\llatitude, longitude\l}"];
+ NGO [label="{NGO|ngo_id (PK)\luser_id (FK)\lname\lphone\lservice_area\ldaily_capacity\lregistration_number\l}"];
+ IND [label="{INDIVIDUAL_RECIPIENT|recipient_id (PK)\luser_id (FK)\lfull_name\lphone\laddress\lhousehold_size\l}", fillcolor="#DDE7F8"];
+ LISTING [label="{FOOD_LISTING|listing_id (PK)\lhotel_id (FK)\lfood_name (title)\ltotal_servings / servings_available\lpickup_location\lcontact_phone\lstorage_notes\lpickup_window_start, collection_deadline\lsafe_until\lstatus\l}", fillcolor="#DCEEE3"];
+ ITEM [label="{FOOD_ITEM|item_id (PK)\llisting_id (FK)\lname, category\lquantity, unit\lcooking_time_note\lallergens_note\l}"];
+ REQ [label="{DONATION_REQUEST|request_id (PK)\llisting_id (FK)\lngo_id (FK, optional)\lindividual_id (FK, optional)\lrequest_quantity (amount)\lrequest_date\lcollection_date\lstatus\l}", fillcolor="#DCEEE3"];
+ CODE [label="{HANDOVER_CODE|request_id (FK)\lsalt, status, expires_at\lfailed_attempts\l}"];
+ REPORT [label="{LISTING_REPORT|report_id (PK)\llisting_id (FK)\lreporter_id (FK)\lreason, details\lstatus\l}", fillcolor="#F8E0DB"];
+ NOTE [label="{NOTIFICATION|notification_id (PK)\luser_id (FK)\lmessage, link, is_read\l}"];
+ USER -> HOTEL [label="1 : 0..1"]; USER -> NGO [label="1 : 0..1"]; USER -> IND [label="1 : 0..1"];
+ USER -> REPORT [label="files  1 : N"]; USER -> NOTE [label="receives  1 : N"];
+ HOTEL -> LISTING [label="publishes  1 : N"]; LISTING -> ITEM [label="contains  1 : N"];
+ LISTING -> REQ [label="receives  1 : N"]; LISTING -> REPORT [label="is reported  1 : N"];
+ NGO -> REQ [label="submits  1 : N"]; IND -> REQ [label="submits  1 : N"];
+ REQ -> CODE [label="secured by  1 : 0..1"];
+}

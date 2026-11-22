@@ -1,0 +1,6 @@
+{% load fb_extras %}<div class="fb-empty">
+  <div class="fb-empty__mark">{% icon icon|default:"leaf" 24 %}</div>
+  <h3>{{ title }}</h3>
+  <p>{{ body }}</p>
+  {% if action_url %}<a href="{{ action_url }}" class="btn btn-fb-primary">{{ action_label }}</a>{% endif %}
+</div>

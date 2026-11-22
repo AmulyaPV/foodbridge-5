@@ -1,0 +1,2 @@
+{% load fb_extras %}{# The draining bar. Expects `listing`. Optional: extra="fb-clockbar--thick fb-clockbar--intro" #}
+<div class="fb-clockbar {{ extra }}" data-clockbar data-start="{{ listing.created_at|epoch }}" data-end="{{ listing.safe_until|epoch }}" data-state="{{ listing.seconds_until_unsafe|clock_state }}" role="img" aria-label="Time left before this food stops being safe"><i style="width: {% clock_pct listing %}%"></i></div>

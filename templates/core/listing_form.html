@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Post surplus food: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Post surplus food</h1><p class="fb-lede">Only post food that is safe to eat. NGOs nearby are told as soon as you post.</p></div></div>
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+  <div class="fb-panel fb-form-section">
+    <h2>What's on offer</h2>
+    <p>A short name helps recipients decide quickly. Add each dish below.</p>
+    <div class="row">
+      <div class="col-md-8 mb-3">{% include "partials/field.html" with f=form.title %}</div>
+      <div class="col-md-4 mb-3">{% include "partials/field.html" with f=form.total_servings %}</div>
+      <div class="col-12 mb-1">{% include "partials/field.html" with f=form.storage_notes %}</div>
+    </div>
+  </div>
+
+  <div class="fb-panel fb-form-section">
+    <h2>Food items</h2>
+    <p>Name, category, quantity, when it was cooked and any allergens.</p>
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors.0 }}</div>{% endif %}
+    <div id="fb-item-rows">
+      {% for item_form in formset %}{% include "partials/item_row.html" with item_form=item_form index=forloop.counter %}{% endfor %}
+    </div>
+    <template id="fb-item-template">{% include "partials/item_row.html" with item_form=formset.empty_form index="new" %}</template>
+    <button type="button" class="btn btn-fb-outline btn-sm" data-formset-add>{% icon "plus" 16 %}Add another item</button>
+  </div>
+
+  <div class="fb-panel fb-form-section">
+    <h2>When and where</h2>
+    <p>The Safe-Until Clock counts down to the time you set. Requests that can't get there before it ends are blocked.</p>
+    <div class="row">
+      <div class="col-md-4 mb-3">{% include "partials/field.html" with f=form.pickup_window_start %}</div>
+      <div class="col-md-4 mb-3">{% include "partials/field.html" with f=form.pickup_window_end %}</div>
+      <div class="col-md-4 mb-3">{% include "partials/field.html" with f=form.safe_until %}</div>
+      <div class="col-md-8 mb-3">{% include "partials/field.html" with f=form.pickup_location %}</div>
+      <div class="col-md-4 mb-3">{% include "partials/field.html" with f=form.contact_phone %}</div>
+      <div class="col-12">{% include "partials/field.html" with f=form.photos %}</div>
+    </div>
+  </div>
+
+  <div class="fb-row">
+    <button type="submit" class="btn btn-fb-amber btn-lg-tap">Post listing</button>
+    <a class="btn btn-fb-ghost" href="{% url 'core:hotel_dashboard' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

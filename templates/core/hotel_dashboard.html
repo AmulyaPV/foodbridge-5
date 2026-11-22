@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load fb_extras static %}
+{% block title %}My listings: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head">
+  <div><h1>My listings</h1><p class="fb-lede">{{ request.user.display_name }}</p></div>
+  <a href="{% url 'core:listing_create' %}" class="btn btn-fb-amber btn-lg-tap">{% icon "plus" 18 %}Post surplus food</a>
+</div>
+
+<div class="fb-strip">
+  <div><b>{{ live_count }}</b><span>live now</span></div>
+  <div><b>{{ servings_on_offer }}</b><span>servings on offer</span></div>
+  <div class="{% if pending_count %}is-attn{% endif %}"><b>{{ pending_count }}</b><span>{% if pending_count %}<a href="{% url 'core:hotel_requests' %}">waiting on you</a>{% else %}waiting on you{% endif %}</span></div>
+  <div><b>{{ collected_servings }}</b><span>servings collected, all time</span></div>
+</div>
+
+{% if listings %}
+  <div class="fb-rail">
+  {% for listing in listings %}
+    <article class="fb-docket {% if not listing.is_live %}fb-docket--dim{% endif %}">
+      {% if listing.is_live %}{% include "partials/clockbar.html" with listing=listing %}{% endif %}
+      <div class="fb-docket__body">
+        <div class="fb-docket__top">
+          <div>
+            <h3 class="fb-docket__title"><a href="{% url 'core:listing_detail' listing.pk %}">{{ listing.display_title }}</a></h3>
+            <p class="fb-docket__from"><span>Listing #{{ listing.pk }}</span><span>{% icon "clock" 15 %}safe until {{ listing.safe_until|date:"d M, H:i" }}</span></p>
+          </div>
+          <div class="fb-docket__servings"><b>{{ listing.servings_available }}<span class="fb-muted" style="font-size:1rem;font-weight:600"> / {{ listing.total_servings }}</span></b><small>servings left</small></div>
+        </div>
+        <div class="fb-docket__chips">
+          {% listing_status_badge listing %}
+          {% for value, label in listing.category_choices %}<span class="fb-chip fb-chip--{{ value }}"><i></i>{{ label }}</span>{% endfor %}
+        </div>
+      </div>
+      <div class="fb-docket__stub">
+        {% if listing.is_live %}{% include "partials/clock.html" with listing=listing %}{% else %}<span class="fb-muted fb-small">{% if listing.removal_reason %}Removed: {{ listing.removal_reason }}{% elif listing.cancel_reason %}Closed: {{ listing.cancel_reason }}{% else %}Finished{% endif %}</span>{% endif %}
+        <div class="fb-row">
+          {% if listing.status == "posted" %}
+            <a href="{% url 'core:listing_edit' listing.pk %}" class="btn btn-fb-outline btn-sm">Edit</a>
+            <a href="{% url 'core:listing_cancel' listing.pk %}" class="btn btn-fb-ghost btn-sm">Close</a>
+          {% endif %}
+          <a href="{% url 'core:listing_repost' listing.pk %}" class="btn btn-fb-primary btn-sm">Repost</a>
+        </div>
+      </div>
+    </article>
+  {% endfor %}
+  </div>
+{% else %}
+  {% include "partials/empty_state.html" with icon="leaf" title="Nothing posted yet" body="Post what's left after service. NGOs nearby are told straight away." action_url="/hotel/listings/new/" action_label="Post surplus food" %}
+{% endif %}
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/safe-until.js' %}"></script>{% endblock %}

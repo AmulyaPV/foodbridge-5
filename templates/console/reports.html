@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Reports: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Reports</h1><p class="fb-lede">Counted from donations recorded on FoodBridge. Nothing here is estimated.</p></div><a href="{% url 'console:reports_csv' %}" class="btn btn-fb-outline btn-sm">Export CSV</a></div>
+{% include "console/_subnav.html" %}
+<div class="fb-strip">
+  <div><b>{{ summary.listings_created }}</b><span>listings created</span></div>
+  <div><b>{{ summary.donations_collected }}</b><span>donations collected</span></div>
+  <div><b>{{ summary.servings_redistributed }}</b><span>servings redistributed</span></div>
+  <div><b>{{ summary.listings_expired }}</b><span>listings expired</span></div>
+</div>
+<section class="fb-panel mb-3">
+  <h2 class="fb-panel__title">By month</h2>
+  {% if monthly %}
+    <div class="fb-table-wrap"><table class="fb-table">
+      <thead><tr><th>Month</th><th class="num">Listings created</th><th class="num">Pickups collected</th><th class="num">Servings redistributed</th></tr></thead>
+      <tbody>{% for row in monthly %}<tr><td>{{ row.month|date:"M Y" }}</td><td class="num">{{ row.listings }}</td><td class="num">{{ row.pickups }}</td><td class="num">{{ row.servings }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  {% else %}<p class="fb-muted mb-0">No listings yet.</p>{% endif %}
+</section>
+<div class="row g-3">
+  <div class="col-md-6"><section class="fb-panel h-100">
+    <h2 class="fb-panel__title">Top hotels</h2>
+    {% if top_hotels %}<ol class="mb-0 ps-3">{% for row in top_hotels %}<li class="mb-1"><b>{{ row.listing__hotel__name }}</b> <span class="fb-muted">{{ row.servings }} servings, {{ row.pickups }} pickup{{ row.pickups|pluralize }}</span></li>{% endfor %}</ol>{% else %}<p class="fb-muted mb-0">No collected donations yet.</p>{% endif %}
+  </section></div>
+  <div class="col-md-6"><section class="fb-panel h-100">
+    <h2 class="fb-panel__title">Top recipients</h2>
+    {% if top_recipients %}<ol class="mb-0 ps-3">{% for row in top_recipients %}<li class="mb-1"><b>{{ row.name }}</b> <span class="fb-badge fb-badge--grey">{{ row.kind }}</span> <span class="fb-muted">{{ row.servings }} servings, {{ row.pickups }} pickup{{ row.pickups|pluralize }}</span></li>{% endfor %}</ol>{% else %}<p class="fb-muted mb-0">No collected donations yet.</p>{% endif %}
+  </section></div>
+</div>
+{% endblock %}

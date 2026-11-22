@@ -1,0 +1,4 @@
+{% load fb_extras %}<label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+{{ f|bs }}
+{% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+{% if f.errors %}<div class="invalid-feedback d-block">{{ f.errors.0 }}</div>{% endif %}

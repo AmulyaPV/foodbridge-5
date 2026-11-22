@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load fb_extras static %}
+{% block title %}My requests: FoodBridge{% endblock %}
+{% block extra_js %}<script src="{% static 'js/handover.js' %}"></script><script src="{% static 'js/safe-until.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>My requests</h1>{% if collected_servings %}<p class="fb-lede">{{ collected_servings }} servings collected so far.</p>{% endif %}</div><a href="{% url 'core:ngo_dashboard' %}" class="btn btn-fb-outline btn-sm">Find food</a></div>
+<nav class="fb-tabs" aria-label="Request views">
+  <a href="?view=active" class="{% if view == 'active' %}is-active{% endif %}">Active <span class="fb-tab-n">{{ active_count }}</span></a>
+  <a href="?view=history" class="{% if view == 'history' %}is-active{% endif %}">History <span class="fb-tab-n">{{ history_count }}</span></a>
+</nav>
+
+{% if pickup_requests %}
+  <div class="fb-stack">
+  {% for r in pickup_requests %}
+    <div class="fb-panel">
+      <div class="fb-row fb-row--between">
+        <div>
+          <a href="{% url 'core:listing_detail' r.listing_id %}" style="font-weight:700;font-size:1.1rem;color:var(--ink)">{{ r.listing.display_title }}</a>
+          <div class="fb-muted fb-small">{{ r.listing.hotel.name }} · {{ r.amount }} servings · asked {{ r.requested_at|date:"d M, H:i" }}</div>
+        </div>
+        {% request_status_badge r.status %}
+      </div>
+
+      {% if r.step_index >= 0 %}
+      <ol class="fb-track">
+        <li class="{% if r.step_index > 0 %}is-done{% elif r.step_index == 0 %}is-now{% endif %}">Requested</li>
+        <li class="{% if r.step_index >= 2 %}is-done{% elif r.step_index == 1 %}is-now{% endif %}">Confirmed</li>
+        <li class="{% if r.step_index >= 3 %}is-done{% elif r.step_index == 2 %}is-now{% endif %}">On the way</li>
+        <li class="{% if r.step_index == 3 %}is-now{% endif %}">Collected</li>
+      </ol>
+      {% elif r.reject_reason or r.cancel_reason %}
+        <p class="fb-callout fb-callout--chilli mt-3 mb-0"><b>{% if r.status == "rejected" %}Declined{% else %}Cancelled{% endif %}</b>{{ r.reject_reason|default:r.cancel_reason }}</p>
+      {% endif %}
+
+      {% if r.status == "confirmed" or r.status == "on_the_way" %}
+        <p class="mb-2"><b>Collect from:</b> {{ r.listing.location_text }} · {{ r.listing.contact_number }}</p>
+        <div class="mb-2">{% include "partials/clock.html" with listing=r.listing %}</div>
+        {% include "partials/handover_code_card.html" %}
+        <div class="fb-row">
+          <a href="{% if r.listing.hotel.has_pin %}https://www.google.com/maps/dir/?api=1&destination={{ r.listing.hotel.latitude }},{{ r.listing.hotel.longitude }}{% else %}https://www.google.com/maps/search/?api=1&query={{ r.listing.location_text|urlencode }}{% endif %}" target="_blank" rel="noopener" class="btn btn-fb-outline btn-sm">{% icon "route" 18 %}Directions</a>
+          {% if r.status == "confirmed" %}
+            <form method="post" action="{% url 'core:mark_on_the_way' r.pk %}" class="fb-row" style="gap:.4rem">
+              {% csrf_token %}
+              <input type="number" name="eta_minutes" min="1" max="240" required placeholder="Minutes away" aria-label="Minutes away" class="form-control" style="width:9.5rem;min-height:38px">
+              <button type="submit" class="btn btn-fb-amber btn-sm">I'm on my way</button>
+            </form>
+          {% else %}<span class="fb-muted fb-small">You told the hotel you're about {{ r.eta_minutes }} min away.</span>{% endif %}
+          <form method="post" action="{% url 'core:request_cancel' r.pk %}" onsubmit="return confirm('Cancel this pickup?');">{% csrf_token %}<button type="submit" class="btn btn-fb-ghost btn-sm">Cancel</button></form>
+        </div>
+      {% elif r.status == "requested" %}
+        <form method="post" action="{% url 'core:request_cancel' r.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-ghost btn-sm">Cancel request</button></form>
+      {% endif %}
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  {% if view == "history" %}
+    {% include "partials/empty_state.html" with icon="history" title="No history yet" body="Collected, declined and cancelled requests are kept here." %}
+  {% else %}
+    {% include "partials/empty_state.html" with icon="inbox" title="No active requests" body="Find food nearby and request servings. Your pickup code appears here once the hotel confirms." action_url="/food/" action_label="Find food" %}
+  {% endif %}
+{% endif %}
+{% endblock %}

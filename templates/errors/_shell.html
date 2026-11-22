@@ -1,0 +1,26 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}FoodBridge{% endblock %}: FoodBridge</title>
+<style>
+@font-face{font-family:"Bricolage Grotesque";src:url("{% static 'fonts/bricolage-grotesque.woff2' %}") format("woff2");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Hanken Grotesk";src:url("{% static 'fonts/hanken-grotesk.woff2' %}") format("woff2");font-weight:100 900;font-display:swap}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;background:#edf0ee;color:#1b2650;font-family:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;line-height:1.55}
+.ticket{max-width:440px;width:100%;background:#fff;border:1px solid #cdd5d1;border-radius:6px;position:relative}
+.bar{height:7px;background:#c8381f;width:100%;border-radius:6px 6px 0 0}
+.in{padding:1.5rem 1.5rem 1.2rem}
+.code{font-family:"Bricolage Grotesque","Segoe UI",sans-serif;font-weight:800;font-size:4rem;letter-spacing:-.04em;line-height:1;color:#1b2650;margin:0}
+h1{font-family:"Bricolage Grotesque","Segoe UI",sans-serif;font-size:1.5rem;margin:.4rem 0 .4rem;letter-spacing:-.02em}
+p{margin:0;color:#566083}
+.stub{border-top:2px dashed #cdd5d1;padding:1rem 1.5rem}
+a{display:inline-block;background:#f0a81c;color:#1b2650;font-weight:700;text-decoration:none;padding:.65rem 1.2rem;border-radius:10px}
+a:focus-visible{outline:3px solid #1b2650;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="ticket"><div class="bar"></div>
+<div class="in"><p class="code">{% block code %}{% endblock %}</p><h1>{% block heading %}{% endblock %}</h1><p>{% block body %}{% endblock %}</p></div>
+<div class="stub"><a href="/">Back to FoodBridge</a></div></div>
+</body>
+</html>

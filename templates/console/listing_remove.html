@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Remove listing: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Remove listing #{{ listing.pk }}</h1><p class="fb-lede">{{ listing.display_title }} from {{ listing.hotel.name }}. It leaves the board at once and open requests are cancelled.</p></div></div>
+<form method="post" novalidate class="fb-panel">
+  {% csrf_token %}
+  <div class="mb-3">{% include "partials/field.html" with f=form.reason %}</div>
+  <div class="fb-row"><button type="submit" class="btn btn-fb-danger btn-lg-tap">Remove listing</button><a href="{% url 'console:listings' %}" class="btn btn-fb-ghost">Go back</a></div>
+</form>
+{% endblock %}

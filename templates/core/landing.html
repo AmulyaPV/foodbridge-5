@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static fb_extras %}
+{% block title %}FoodBridge: surplus food, collected while it's still safe{% endblock %}
+{% block content %}
+<section class="fb-hero">
+  <div>
+    <h1>Food that's left over shouldn't be left out.</h1>
+    <p class="fb-lede">Hotels and restaurants post what's safe to eat. NGOs and people who need food claim it, and collect before the clock runs out.</p>
+    <div class="fb-hero__cta">
+      <a href="{% url 'accounts:register_hotel' %}" class="btn btn-fb-amber btn-lg-tap">I have food to give</a>
+      <a href="{% url 'accounts:register_ngo' %}" class="btn btn-fb-outline btn-lg-tap">We're an NGO</a>
+      <a href="{% url 'accounts:register_individual' %}" class="btn btn-fb-ghost btn-lg-tap">I need food</a>
+    </div>
+  </div>
+
+  <div class="fb-hero__demo" aria-label="A sample listing">
+    <span class="fb-sample-tag">Sample docket</span>
+    <article class="fb-docket">
+      <div class="fb-clockbar fb-clockbar--intro" data-clockbar data-demo-left="134" data-demo-elapsed="46" data-state="ok"><i style="width:74%"></i></div>
+      <div class="fb-docket__body">
+        <div class="fb-docket__top">
+          <div>
+            <h3 class="fb-docket__title">Veg biryani and raita</h3>
+            <p class="fb-docket__from"><span>Hotel Mayura</span><span>{% icon "pin" 15 %}1.8 km away</span></p>
+          </div>
+          <div class="fb-docket__servings"><b>60</b><small>servings left</small></div>
+        </div>
+        <div class="fb-docket__chips"><span class="fb-chip fb-chip--veg"><i></i>Vegetarian</span><span class="fb-chip">Collect by 21:30</span></div>
+        <p class="fb-docket__note">Kept hot above 60 °C in sealed steel containers.</p>
+      </div>
+      <div class="fb-docket__stub">
+        <span class="fb-clock" data-clock data-demo-left="134" data-demo-elapsed="46" data-state="ok"><span class="fb-clock__label" data-live="safe for">safe for</span> <span class="fb-clock__time">2h 14m</span></span>
+        <span class="btn btn-fb-amber btn-sm" aria-hidden="true">View and request</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<h2 class="fb-section-title">How a donation moves</h2>
+<p class="fb-muted mb-3">Both sides see every step, from posted to collected.</p>
+<ol class="fb-track fb-track--lg">
+  <li class="is-done">Posted<small>The hotel lists what's left, with a safe-until time.</small></li>
+  <li class="is-done">Requested<small>A recipient asks for a number of servings.</small></li>
+  <li class="is-now">Confirmed<small>The hotel says yes and the recipient gets a one-time code.</small></li>
+  <li>Collected<small>The recipient shows the code at pickup. Done.</small></li>
+</ol>
+
+<h2 class="fb-section-title">Who it's for</h2>
+<div class="fb-doors">
+  <div class="fb-door">
+    <span class="fb-door__ico">{% icon "leaf" 24 %}</span>
+    <h3>Hotels and restaurants</h3>
+    <p>Post surplus in a minute from your phone. Confirm who collects, and keep a record of every donation.</p>
+    <a href="{% url 'accounts:register_hotel' %}" class="btn btn-fb-outline btn-sm">Register your kitchen</a>
+  </div>
+  <div class="fb-door">
+    <span class="fb-door__ico">{% icon "users" 24 %}</span>
+    <h3>NGOs</h3>
+    <p>The nearest, most reliable NGOs get a 10-minute first look. Post what you need on the needs board.</p>
+    <a href="{% url 'accounts:register_ngo' %}" class="btn btn-fb-outline btn-sm">Register your NGO</a>
+  </div>
+  <div class="fb-door">
+    <span class="fb-door__ico">{% icon "home" 24 %}</span>
+    <h3>Individuals</h3>
+    <p>Not part of an NGO? Once an admin verifies you, you can request a few servings that are still nearby and safe.</p>
+    <a href="{% url 'accounts:register_individual' %}" class="btn btn-fb-outline btn-sm">Sign up to request food</a>
+  </div>
+</div>
+
+{% if hotel_count or ngo_count or servings_collected %}
+<div class="fb-ledger" aria-label="Platform totals">
+  {% if hotel_count %}<div><b>{{ hotel_count }}</b>verified hotels</div>{% endif %}
+  {% if ngo_count %}<div><b>{{ ngo_count }}</b>verified NGOs</div>{% endif %}
+  {% if individual_count %}<div><b>{{ individual_count }}</b>verified individuals</div>{% endif %}
+  {% if servings_collected %}<div><b>{{ servings_collected }}</b>servings collected in {{ pickups_collected }} pickup{{ pickups_collected|pluralize }}</div>{% endif %}
+</div>
+{% endif %}
+<p class="fb-safety">Every account is checked by an admin before it can post or request. FoodBridge is a coordination tool: hotels and recipients are responsible for food safety and handling.</p>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/safe-until.js' %}"></script>{% endblock %}

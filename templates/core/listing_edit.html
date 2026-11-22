@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Edit listing: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--narrow{% endblock %}
+{% block content %}
+<div class="fb-page__head"><div><h1>Edit listing #{{ listing.pk }}</h1><p class="fb-lede">Food items can't change after posting. Close the listing and post a new one if they do.</p></div></div>
+<form method="post" novalidate class="fb-panel">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>{% endif %}
+  <div class="row">
+    <div class="col-12 mb-3">{% include "partials/field.html" with f=form.title %}</div>
+    <div class="col-12 mb-3">{% include "partials/field.html" with f=form.storage_notes %}</div>
+    <div class="col-sm-6 mb-3">{% include "partials/field.html" with f=form.pickup_window_start %}</div>
+    <div class="col-sm-6 mb-3">{% include "partials/field.html" with f=form.pickup_window_end %}</div>
+    <div class="col-12 mb-3">{% include "partials/field.html" with f=form.safe_until %}</div>
+    <div class="col-12 mb-3">{% include "partials/field.html" with f=form.pickup_location %}</div>
+    <div class="col-12 mb-3">{% include "partials/field.html" with f=form.contact_phone %}</div>
+  </div>
+  <div class="fb-row">
+    <button type="submit" class="btn btn-fb-primary btn-lg-tap">Save changes</button>
+    <a class="btn btn-fb-ghost" href="{% url 'core:listing_detail' listing.pk %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
