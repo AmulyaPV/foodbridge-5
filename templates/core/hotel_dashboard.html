@@ -35,11 +35,12 @@
       <div class="fb-docket__stub">
         {% if listing.is_live %}{% include "partials/clock.html" with listing=listing %}{% else %}<span class="fb-muted fb-small">{% if listing.removal_reason %}Removed: {{ listing.removal_reason }}{% elif listing.cancel_reason %}Closed: {{ listing.cancel_reason }}{% else %}Finished{% endif %}</span>{% endif %}
         <div class="fb-row">
+          <a href="{% url 'core:listing_detail' listing.pk %}" class="btn btn-fb-primary btn-sm">View details &amp; requests</a>
           {% if listing.status == "posted" %}
             <a href="{% url 'core:listing_edit' listing.pk %}" class="btn btn-fb-outline btn-sm">Edit</a>
             <a href="{% url 'core:listing_cancel' listing.pk %}" class="btn btn-fb-ghost btn-sm">Close</a>
           {% endif %}
-          <a href="{% url 'core:listing_repost' listing.pk %}" class="btn btn-fb-primary btn-sm">Repost</a>
+          <a href="{% url 'core:listing_repost' listing.pk %}" class="btn btn-fb-ghost btn-sm">Repost</a>
         </div>
       </div>
     </article>

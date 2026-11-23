@@ -43,7 +43,7 @@ def run_smart_match(listing):
         notify(
             ngo.user,
             "match",
-            f"New food near you from {listing.hotel.name} — you get first look for 10 minutes.",
+            f"New food posted by {listing.hotel.name}: {listing.display_title} ({listing.servings_available} servings).",
             link="/food/",
         )
     return matches

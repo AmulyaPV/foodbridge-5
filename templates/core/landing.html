@@ -13,28 +13,70 @@
     </div>
   </div>
 
-  <div class="fb-hero__demo" aria-label="A sample listing">
-    <span class="fb-sample-tag">Sample docket</span>
-    <article class="fb-docket">
-      <div class="fb-clockbar fb-clockbar--intro" data-clockbar data-demo-left="134" data-demo-elapsed="46" data-state="ok"><i style="width:74%"></i></div>
-      <div class="fb-docket__body">
-        <div class="fb-docket__top">
-          <div>
-            <h3 class="fb-docket__title">Veg biryani and raita</h3>
-            <p class="fb-docket__from"><span>Hotel Mayura</span><span>{% icon "pin" 15 %}1.8 km away</span></p>
+  <div class="fb-hero__demo" aria-label="Surplus food">
+    {% if live_listings %}
+      <span class="fb-sample-tag" style="background:var(--leaf);color:#fff">Live food available now</span>
+      {% with listing=live_listings.0 %}
+        {% include "partials/docket.html" with listing=listing %}
+      {% endwith %}
+    {% else %}
+      <span class="fb-sample-tag">Sample docket</span>
+      <article class="fb-docket">
+        <div class="fb-clockbar fb-clockbar--intro" data-clockbar data-demo-left="134" data-demo-elapsed="46" data-state="ok"><i style="width:74%"></i></div>
+        <div class="fb-docket__body">
+          <div class="fb-docket__top">
+            <div>
+              <h3 class="fb-docket__title">Veg biryani and raita</h3>
+              <p class="fb-docket__from"><span>Hotel Mayura</span><span>{% icon "pin" 15 %}1.8 km away</span></p>
+            </div>
+            <div class="fb-docket__servings"><b>60</b><small>servings left</small></div>
           </div>
-          <div class="fb-docket__servings"><b>60</b><small>servings left</small></div>
+          <div class="fb-docket__chips"><span class="fb-chip fb-chip--veg"><i></i>Vegetarian</span><span class="fb-chip">Collect by 21:30</span></div>
+          <p class="fb-docket__note">Kept hot above 60 °C in sealed steel containers.</p>
         </div>
-        <div class="fb-docket__chips"><span class="fb-chip fb-chip--veg"><i></i>Vegetarian</span><span class="fb-chip">Collect by 21:30</span></div>
-        <p class="fb-docket__note">Kept hot above 60 °C in sealed steel containers.</p>
-      </div>
-      <div class="fb-docket__stub">
-        <span class="fb-clock" data-clock data-demo-left="134" data-demo-elapsed="46" data-state="ok"><span class="fb-clock__label" data-live="safe for">safe for</span> <span class="fb-clock__time">2h 14m</span></span>
-        <span class="btn btn-fb-amber btn-sm" aria-hidden="true">View and request</span>
-      </div>
-    </article>
+        <div class="fb-docket__stub">
+          <span class="fb-clock" data-clock data-demo-left="134" data-demo-elapsed="46" data-state="ok"><span class="fb-clock__label" data-live="safe for">safe for</span> <span class="fb-clock__time">2h 14m</span></span>
+          <a href="{% url 'accounts:login' %}" class="btn btn-fb-amber btn-sm">Log in to request</a>
+        </div>
+      </article>
+    {% endif %}
   </div>
 </section>
+
+{% if live_listings %}
+<section class="mt-4 mb-5">
+  <div class="fb-page__head">
+    <div>
+      <h2 class="fb-section-title mb-1">Live surplus food postings</h2>
+      <p class="fb-muted mb-0">Food currently available for pickup from registered hotels and donors.</p>
+    </div>
+    <a href="{% url 'core:ngo_dashboard' %}" class="btn btn-fb-primary btn-sm">View all in food feed &rarr;</a>
+  </div>
+  <div class="fb-rail mt-3">
+    {% for listing in live_listings %}
+      {% include "partials/docket.html" with listing=listing %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if recent_requests %}
+<section class="mt-4 mb-5">
+  <h2 class="fb-section-title mb-1">Recent pickup activity</h2>
+  <p class="fb-muted mb-3">Live connection between donors and recipients.</p>
+  <div class="fb-panel">
+    {% for r in recent_requests %}
+      <div class="fb-row fb-row--between py-2" style="border-bottom:1px solid var(--line-soft)">
+        <div>
+          <b>{{ r.recipient_name }}</b> requested <strong>{{ r.amount }} servings</strong> of <em>{{ r.listing.display_title }}</em>
+          <div class="fb-muted fb-small">Donor: {{ r.listing.hotel.name }} · {{ r.requested_at|date:"d M, H:i" }}</div>
+        </div>
+        <div>{% request_status_badge r.status %}</div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 <h2 class="fb-section-title">How a donation moves</h2>
 <p class="fb-muted mb-3">Both sides see every step, from posted to collected.</p>

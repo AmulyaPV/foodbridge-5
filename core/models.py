@@ -159,15 +159,13 @@ class FoodListing(models.Model):
         return timezone.now() < self.first_look_ends_at
 
     def visible_to(self, recipient_profile):
-        """A recipient can see this listing once it's live. During the first-look window only an
-        NGO that was matched as a top pick can see it; individuals wait for the window to end."""
+        """A recipient can see this listing once it's live. All verified NGOs see it immediately.
+        Individuals wait for the 10-minute first-look window to end."""
         if not self.is_live:
             return False
-        if not self.first_look_active:
+        if recipient_profile.__class__.__name__ == "NGOProfile":
             return True
-        if recipient_profile.__class__.__name__ != "NGOProfile":
-            return False
-        return self.matches.filter(ngo=recipient_profile).exists()
+        return not self.first_look_active
 
     def mark_expired_if_needed(self):
         if self.status == ListingStatus.POSTED and self.is_past_safe_until:

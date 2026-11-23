@@ -58,16 +58,31 @@ def _local_input(dt):
 
 
 def landing(request):
-    if request.user.is_authenticated:
-        return redirect("accounts:home")
     verified = User.objects.filter(verification_status=Verification.APPROVED)
     collected = PickupRequest.objects.filter(status=RequestStatus.COLLECTED)
+    live_listings = list(
+        FoodListing.objects.filter(status=ListingStatus.POSTED)
+        .select_related("hotel")
+        .prefetch_related("items", "requests", "photos")
+        .order_by("-created_at")[:6]
+    )
+    for listing in live_listings:
+        listing.mark_expired_if_needed()
+    live_listings = [l for l in live_listings if l.is_live]
+
+    recent_requests = list(
+        PickupRequest.objects.select_related("listing__hotel", "ngo", "individual")
+        .order_by("-requested_at")[:5]
+    )
+
     context = {
         "hotel_count": verified.filter(role=Role.HOTEL).count(),
         "ngo_count": verified.filter(role=Role.NGO).count(),
         "individual_count": verified.filter(role=Role.INDIVIDUAL).count(),
         "servings_collected": collected.aggregate(total=Sum("amount"))["total"] or 0,
         "pickups_collected": collected.count(),
+        "live_listings": live_listings,
+        "recent_requests": recent_requests,
     }
     return render(request, "core/landing.html", context)
 

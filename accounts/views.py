@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db import transaction
@@ -68,6 +68,14 @@ def register_ngo(request):
 
 def register_individual(request):
     return _register(request, IndividualRegisterForm, IndividualProfileForm, "Individual", "individual")
+
+
+def logout_view(request):
+    if request.method == "POST":
+        auth_logout(request)
+        messages.success(request, "You have been logged out successfully.")
+        return redirect("core:landing")
+    return render(request, "accounts/logout.html")
 
 
 @login_required

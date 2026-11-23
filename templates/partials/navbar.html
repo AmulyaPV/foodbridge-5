@@ -25,8 +25,13 @@
       </nav>
       <div class="fb-account">
         <span class="fb-who fb-hide-sm"><b>{{ user.display_name }}</b></span>
-        <a href="{% url 'core:notifications' %}" class="fb-hide-sm" style="color:#d5dbf3;text-decoration:none;padding:.5rem .8rem;border-radius:10px;display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.95rem" aria-label="Alerts{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">{% icon "bell" 18 %}Alerts{% if unread_notifications %} <span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
-        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">{% csrf_token %}<button type="submit">{% icon "out" 18 %}<span class="fb-hide-sm">Log out</span><span class="visually-hidden d-md-none">Log out</span></button></form>
+        <a href="{% url 'core:notifications' %}" class="fb-hide-sm" style="color:#d5dbf3;text-decoration:none;padding:.5rem .8rem;border-radius:10px;display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.95rem" aria-label="Alerts{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">{% icon "bell" 18 %}Alerts{% if unread_notifications %}<span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-light" style="display:inline-flex;align-items:center;gap:.35rem;font-weight:600;padding:.35rem .75rem;border-radius:8px;margin-left:.5rem;border-color:rgba(255,255,255,0.3)">
+            {% icon "out" 16 %}<span>Log out</span>
+          </button>
+        </form>
       </div>
     {% else %}
       <div class="fb-guest">

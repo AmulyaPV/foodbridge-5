@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load fb_extras %}
+{% block title %}Log out: FoodBridge{% endblock %}
+{% block page_class %}fb-page fb-page--form{% endblock %}
+{% block content %}
+<div class="fb-page__head">
+  <div>
+    <h1>Log out</h1>
+    <p class="fb-lede">Are you sure you want to log out of FoodBridge?</p>
+  </div>
+</div>
+
+<div class="fb-panel fb-form-section">
+  <p>You are currently signed in as <strong>{{ user.display_name }}</strong> ({{ user.email }}).</p>
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <div class="fb-row mt-3">
+      <button type="submit" class="btn btn-fb-primary btn-lg-tap">Yes, log out</button>
+      <a href="{% url 'accounts:home' %}" class="btn btn-fb-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
