@@ -12,4 +12,7 @@ python manage.py collectstatic --noinput
 echo "=== Applying Database Migrations ==="
 python manage.py migrate --noinput
 
+echo "=== Ensuring Seed Data & Admin Account Exist ==="
+python manage.py seed_demo_data
+
 echo "=== Render Build Complete ==="

@@ -14,6 +14,15 @@ PASSWORD = "Demo@12345"
 # --- 1. Hotels ---
 hotels_data = [
     {
+        "email": "baahotel@gmail.com",
+        "name": "BAA Hotel & Banquet",
+        "contact": "Anand Kumar",
+        "phone": "9876543200",
+        "address": "15 Church Street, Central Bengaluru",
+        "fssai": "10020030040050",
+        "lat": 12.9740, "lng": 77.6010
+    },
+    {
         "email": "grandpalace@demo.com",
         "name": "The Grand Palace Hotel",
         "contact": "Vikram Malhotra",
