@@ -120,31 +120,44 @@ save_fig(fig, "fig_3_3_use_case_diagram.png")
 # =============================================================================
 # Figure 3.4: Preprocessing Module (Data Validation, Sanitization, Geocoding)
 # =============================================================================
-fig, ax = plt.subplots(figsize=(9.5, 5.5))
-ax.set_xlim(0, 9.5)
-ax.set_ylim(0, 5.5)
+fig, ax = plt.subplots(figsize=(10.5, 6))
+ax.set_xlim(0, 10.5)
+ax.set_ylim(0, 6)
 ax.axis('off')
 
-ax.text(4.75, 5.1, "Preprocessing & Account Verification Pipeline", ha='center', va='center', fontsize=14, fontweight='bold', color=DARK_GREEN)
+ax.text(5.25, 5.5, "Preprocessing & Account Verification Pipeline", ha='center', va='center', fontsize=14, fontweight='bold', color=DARK_GREEN)
 
-steps_pre = [
-    (0.6, 3.5, 2.4, 1.0, "1. User Registration\n(Hotel / NGO / Individual)"),
-    (3.55, 3.5, 2.4, 1.0, "2. Data Sanitization\n(FSSAI, Phone, Certificate)"),
-    (6.5, 3.5, 2.4, 1.0, "3. Geocoding Validation\n(Coordinates & Address Pin)"),
-    (2.1, 1.6, 2.4, 1.0, "4. Admin Verification Queue\n(Pending -> Verified/Rejected)"),
-    (5.1, 1.6, 2.4, 1.0, "5. Profile Activation\n(Role Permissions Granted)")
-]
+# Row 1: Left-to-Right (Steps 1 -> 2 -> 3)
+rect1 = patches.FancyBboxPatch((0.6, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
+ax.add_patch(rect1)
+ax.text(1.85, 4.175, "1. User Registration\n(Hotel / NGO / Individual)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
 
-for x, y, w, h, text in steps_pre:
-    rect = patches.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
-    ax.add_patch(rect)
-    ax.text(x + w/2, y + h/2, text, ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+rect2 = patches.FancyBboxPatch((4.0, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
+ax.add_patch(rect2)
+ax.text(5.25, 4.175, "2. Data Sanitization\n(FSSAI, Phone, Certificate)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
 
-ax.annotate('', xy=(3.55, 4.0), xytext=(3.0, 4.0), arrowprops=arrow)
-ax.annotate('', xy=(6.5, 4.0), xytext=(5.95, 4.0), arrowprops=arrow)
-ax.annotate('', xy=(7.7, 2.6), xytext=(7.7, 3.5), arrowprops=arrow)
-ax.annotate('', xy=(4.5, 2.1), xytext=(7.7, 2.1), arrowprops=arrow)
-ax.annotate('', xy=(5.1, 2.1), xytext=(4.5, 2.1), arrowprops=arrow)
+rect3 = patches.FancyBboxPatch((7.4, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
+ax.add_patch(rect3)
+ax.text(8.65, 4.175, "3. Geocoding Validation\n(Coordinates & Address Pin)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+# Row 2: Right-to-Left (Steps 4 -> 5)
+rect4 = patches.FancyBboxPatch((7.4, 1.4), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
+ax.add_patch(rect4)
+ax.text(8.65, 1.975, "4. Admin Verification Queue\n(Review Pending Documents)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+rect5 = patches.FancyBboxPatch((4.0, 1.4), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#00796b", fc="#e0f2f1", lw=1.8)
+ax.add_patch(rect5)
+ax.text(5.25, 1.975, "5. Profile Activation\n(Role Permissions Granted)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+# Clean, non-overlapping connectors:
+# Step 1 -> Step 2
+ax.annotate('', xy=(4.0, 4.175), xytext=(3.1, 4.175), arrowprops=arrow)
+# Step 2 -> Step 3
+ax.annotate('', xy=(7.4, 4.175), xytext=(6.5, 4.175), arrowprops=arrow)
+# Step 3 -> Step 4 (Straight Down)
+ax.annotate('', xy=(8.65, 2.55), xytext=(8.65, 3.6), arrowprops=arrow)
+# Step 4 -> Step 5 (Straight Left)
+ax.annotate('', xy=(6.5, 1.975), xytext=(7.4, 1.975), arrowprops=arrow)
 
 save_fig(fig, "fig_3_4_preprocessing_module.png")
 
@@ -152,31 +165,44 @@ save_fig(fig, "fig_3_4_preprocessing_module.png")
 # =============================================================================
 # Figure 3.5: Problem Solving Module (Safe-Until Clock & Smart Match Allocation)
 # =============================================================================
-fig, ax = plt.subplots(figsize=(10, 5.8))
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 5.8)
+fig, ax = plt.subplots(figsize=(10.5, 6))
+ax.set_xlim(0, 10.5)
+ax.set_ylim(0, 6)
 ax.axis('off')
 
-ax.text(5, 5.4, "Problem Solving: Surplus Allocation & Safe-Until Clock", ha='center', va='center', fontsize=14, fontweight='bold', color=DARK_GREEN)
+ax.text(5.25, 5.5, "Problem Solving: Surplus Allocation & Safe-Until Clock", ha='center', va='center', fontsize=14, fontweight='bold', color=DARK_GREEN)
 
-nodes_3_5 = [
-    (0.6, 3.6, 2.5, 1.05, "1. Surplus Listing Posted\n(Multiple Items + Safe-Until)"),
-    (3.75, 3.6, 2.5, 1.05, "2. Smart Match Ranking\n(Distance, Capacity, Rating)"),
-    (6.9, 3.6, 2.5, 1.05, "3. 10-Min First Look\n(Broadcast to Top 5 NGOs)"),
-    (2.15, 1.6, 2.5, 1.05, "4. Feasibility Check\n(ETA must be <= Safe-Until)"),
-    (5.3, 1.6, 2.5, 1.05, "5. Atomic Stock Allocation\n(select_for_update Row Lock)")
-]
+# Row 1: Left-to-Right (Steps 1 -> 2 -> 3)
+box1 = patches.FancyBboxPatch((0.6, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
+ax.add_patch(box1)
+ax.text(1.85, 4.175, "1. Surplus Listing Posted\n(Multiple Items + Safe-Until)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
 
-for x, y, w, h, text in nodes_3_5:
-    rect = patches.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
-    ax.add_patch(rect)
-    ax.text(x + w/2, y + h/2, text, ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+box2 = patches.FancyBboxPatch((4.0, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
+ax.add_patch(box2)
+ax.text(5.25, 4.175, "2. Smart Match Ranking\n(Distance, Capacity, Rating)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
 
-ax.annotate('', xy=(3.75, 4.12), xytext=(3.1, 4.12), arrowprops=arrow)
-ax.annotate('', xy=(6.9, 4.12), xytext=(6.25, 4.12), arrowprops=arrow)
-ax.annotate('', xy=(8.15, 2.65), xytext=(8.15, 3.6), arrowprops=arrow)
-ax.annotate('', xy=(4.65, 2.12), xytext=(8.15, 2.12), arrowprops=arrow)
-ax.annotate('', xy=(5.3, 2.12), xytext=(4.65, 2.12), arrowprops=arrow)
+box3 = patches.FancyBboxPatch((7.4, 3.6), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
+ax.add_patch(box3)
+ax.text(8.65, 4.175, "3. 10-Min First Look\n(Broadcast to Top 5 NGOs)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+# Row 2: Right-to-Left (Steps 4 -> 5)
+box4 = patches.FancyBboxPatch((7.4, 1.4), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
+ax.add_patch(box4)
+ax.text(8.65, 1.975, "4. Feasibility Check\n(ETA must be <= Safe-Until)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+box5 = patches.FancyBboxPatch((4.0, 1.4), 2.5, 1.15, boxstyle="round,pad=0.1", ec="#c62828", fc="#ffebee", lw=1.8)
+ax.add_patch(box5)
+ax.text(5.25, 1.975, "5. Atomic Stock Allocation\n(select_for_update Row Lock)", ha='center', va='center', fontsize=9, fontweight='bold', color=TEXT_COLOR)
+
+# Connectors: clean serpentine workflow
+# Step 1 -> Step 2
+ax.annotate('', xy=(4.0, 4.175), xytext=(3.1, 4.175), arrowprops=arrow)
+# Step 2 -> Step 3
+ax.annotate('', xy=(7.4, 4.175), xytext=(6.5, 4.175), arrowprops=arrow)
+# Step 3 -> Step 4 (Straight Down)
+ax.annotate('', xy=(8.65, 2.55), xytext=(8.65, 3.6), arrowprops=arrow)
+# Step 4 -> Step 5 (Straight Left into Step 5)
+ax.annotate('', xy=(6.5, 1.975), xytext=(7.4, 1.975), arrowprops=arrow)
 
 save_fig(fig, "fig_3_5_problem_solving_module.png")
 
