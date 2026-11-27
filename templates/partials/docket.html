@@ -1,4 +1,5 @@
 {% load fb_extras %}{# One listing as a kitchen docket. Expects `listing` (with .distance_km optionally set). #}
+{% listing_inventory listing as inv %}
 <article class="fb-docket">
   {% include "partials/clockbar.html" with listing=listing %}
   <div class="fb-docket__body">
@@ -11,9 +12,31 @@
           <span>{% icon "clock" 15 %}collect by {{ listing.pickup_window_end|date:"H:i" }}</span>
         </p>
       </div>
-      <div class="fb-docket__servings"><b>{{ listing.servings_available }}</b><small>servings left</small></div>
+      <div class="fb-docket__servings">
+        <b>{{ inv.servings_available }}</b><small>servings left</small>
+      </div>
     </div>
+
+    <!-- Live food-wise items and remaining inventory -->
+    {% if inv.items %}
+      <div class="fb-docket__items my-2 p-2 rounded" style="background:rgba(0,0,0,0.03);font-size:0.85rem">
+        <div class="d-flex flex-wrap gap-2">
+          {% for itm in inv.items %}
+            <span class="badge {% if itm.is_available %}bg-white text-dark border{% else %}bg-secondary text-light{% endif %}" title="{{ itm.remaining|floatformat:'-2' }} of {{ itm.quantity|floatformat:'-2' }} remaining">
+              {{ itm.name }}: <b>{{ itm.remaining|floatformat:"-2" }}</b> / {{ itm.quantity|floatformat:"-2" }} {{ itm.unit }}
+              {% if not itm.is_available %}(Depleted){% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
     <div class="fb-docket__chips">
+      {% if inv.status == "partially_allocated" and listing.status == "posted" %}
+        <span class="fb-badge fb-badge--blue">Partially allocated</span>
+      {% else %}
+        {% listing_status_badge listing %}
+      {% endif %}
       {% for value, label in listing.category_choices %}<span class="fb-chip fb-chip--{{ value }}"><i></i>{{ label }}</span>{% endfor %}
       {% if listing.first_look_active %}<span class="fb-chip">First look</span>{% endif %}
     </div>

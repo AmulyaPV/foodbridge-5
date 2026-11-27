@@ -15,6 +15,36 @@
   <div class="col-4"><div class="fb-panel fb-panel--tight"><b class="fb-display" style="font-size:1.6rem">{{ ngo_count }}</b><div class="fb-muted fb-small">verified NGOs</div></div></div>
   <div class="col-4"><div class="fb-panel fb-panel--tight"><b class="fb-display" style="font-size:1.6rem">{{ individual_count }}</b><div class="fb-muted fb-small">verified individuals</div></div></div>
 </div>
+
+<div class="fb-panel mb-4">
+  <h2 class="fb-panel__title mb-3">Donation & Servings Distribution</h2>
+  <div class="row g-3 text-center">
+    <div class="col-md-3">
+      <div class="p-2 border rounded bg-light">
+        <div class="h4 mb-0 fw-bold text-dark">{{ summary.servings_posted }}</div>
+        <small class="text-muted">Servings Posted</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-2 border rounded bg-light">
+        <div class="h4 mb-0 fw-bold text-primary">{{ summary.servings_allocated }}</div>
+        <small class="text-muted">Servings Allocated</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-2 border rounded bg-light">
+        <div class="h4 mb-0 fw-bold text-success">{{ summary.servings_remaining }}</div>
+        <small class="text-muted">Servings Remaining</small>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-2 border rounded bg-light">
+        <div class="h4 mb-0 fw-bold text-info">{{ summary.total_conversations }}</div>
+        <small class="text-muted">Total Conversations</small>
+      </div>
+    </div>
+  </div>
+</div>
 <section class="fb-panel">
   <h2 class="fb-panel__title">Recent activity</h2>
   {% if recent_activity %}

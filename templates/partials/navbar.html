@@ -25,6 +25,7 @@
       </nav>
       <div class="fb-account">
         <span class="fb-who fb-hide-sm"><b>{{ user.display_name }}</b></span>
+        <a href="{% url 'core:conversation_list' %}" class="fb-hide-sm" style="color:#d5dbf3;text-decoration:none;padding:.5rem .8rem;border-radius:10px;display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.95rem" aria-label="Messages{% if unread_messages %}, {{ unread_messages }} unread{% endif %}">{% icon "message" 18 %}Messages{% if unread_messages %}<span class="fb-count">{{ unread_messages }}</span>{% endif %}</a>
         <a href="{% url 'core:notifications' %}" class="fb-hide-sm" style="color:#d5dbf3;text-decoration:none;padding:.5rem .8rem;border-radius:10px;display:inline-flex;gap:.4rem;align-items:center;font-weight:600;font-size:.95rem" aria-label="Alerts{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">{% icon "bell" 18 %}Alerts{% if unread_notifications %}<span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
         <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
           {% csrf_token %}

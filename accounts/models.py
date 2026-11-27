@@ -139,6 +139,13 @@ class HotelProfile(BaseProfile):
     )
     photo = models.ImageField(upload_to="hotels/%Y/%m/", blank=True, validators=[validate_photo_file])
 
+    # Pickup Location Management
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    google_place_id = models.CharField(max_length=255, blank=True)
+    location_updated_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         indexes = [models.Index(fields=["latitude", "longitude"], name="hotel_latlng_idx")]
 
@@ -158,6 +165,36 @@ class NGOProfile(BaseProfile):
     service_area = models.CharField(max_length=200)
     certificate = models.FileField(
         upload_to="ngo_certificates/%Y/%m/", blank=True, validators=[validate_certificate_file]
+    )
+
+    # NGO Food Preference Profile (boosts smart match score, does not restrict requesting)
+    preferred_categories = models.CharField(
+        "Preferred food categories",
+        max_length=100,
+        blank=True,
+        help_text="Comma-separated categories, e.g. 'veg,vegan'",
+    )
+    dietary_restrictions = models.CharField(
+        "Dietary restrictions accepted/handled",
+        max_length=200,
+        blank=True,
+        help_text="e.g. 'Nut-free, Halal, Jain'",
+    )
+    beneficiary_count = models.PositiveIntegerField(
+        "Average beneficiaries served per distribution",
+        default=0,
+        help_text="Estimated people fed per regular distribution",
+    )
+    typical_servings = models.PositiveIntegerField(
+        "Typical servings requested per pickup",
+        default=0,
+        help_text="Ideal target batch size",
+    )
+    preferred_collection_areas = models.CharField(
+        "Preferred collection localities / pin codes",
+        max_length=250,
+        blank=True,
+        help_text="Comma-separated areas",
     )
 
     class Meta:

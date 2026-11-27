@@ -2,6 +2,58 @@
 (function () {
   "use strict";
 
+  // ---- CSRF helper for AJAX/fetch calls ---------------------------------------
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      var cookies = document.cookie.split(";");
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  window.fbGetCsrfToken = function () {
+    var tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (tokenInput && tokenInput.value) return tokenInput.value;
+    return getCookie("csrftoken") || "";
+  };
+
+  // ---- Reliable fetch wrapper with cold-start & error handling ----------------
+  window.fbFetch = function (url, options) {
+    options = options || {};
+    options.credentials = options.credentials || "same-origin";
+    options.headers = options.headers || {};
+    if (!options.headers["X-Requested-With"]) {
+      options.headers["X-Requested-With"] = "XMLHttpRequest";
+    }
+    if (!options.headers["Accept"]) {
+      options.headers["Accept"] = "application/json";
+    }
+    if (options.method && options.method.toUpperCase() === "POST" && !options.headers["X-CSRFToken"]) {
+      options.headers["X-CSRFToken"] = window.fbGetCsrfToken();
+    }
+    return fetch(url, options).then(function (res) {
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Authentication required. Please log in.");
+        }
+        if (res.status === 403) {
+          throw new Error("Action not permitted.");
+        }
+        if (res.status >= 500) {
+          throw new Error("Server error (" + res.status + "). Instance may be starting up, please retry.");
+        }
+        throw new Error("Request failed with status " + res.status);
+      }
+      return res.json();
+    });
+  };
+
   // ---- flash messages: close button + success messages fade away on their own -----------------
   document.querySelectorAll(".fb-flash").forEach(function (flash) {
     var button = flash.querySelector("button");

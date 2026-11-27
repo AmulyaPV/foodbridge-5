@@ -34,8 +34,14 @@
       <h2 class="fb-panel__title">What's included</h2>
       {% for item in listing.items.all %}
         <div class="fb-item">
-          <b>{{ item.name }} <span class="fb-chip fb-chip--{{ item.category }}" style="margin-left:.3rem"><i></i>{{ item.get_category_display }}</span></b>
-          <span class="qty">{{ item.quantity|floatformat:"-2" }} {{ item.get_unit_display }}</span>
+          <div class="d-flex justify-content-between align-items-center">
+            <b>{{ item.name }} <span class="fb-chip fb-chip--{{ item.category }}" style="margin-left:.3rem"><i></i>{{ item.get_category_display }}</span></b>
+            <div>
+              <span class="badge {% if item.remaining_quantity > 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ item.remaining_quantity|floatformat:"-2" }} / {{ item.quantity|floatformat:"-2" }} {{ item.get_unit_display }} available
+              </span>
+            </div>
+          </div>
           {% if item.cooking_time_note or item.allergens_note %}<small>{% if item.cooking_time_note %}{{ item.cooking_time_note }}{% endif %}{% if item.cooking_time_note and item.allergens_note %} · {% endif %}{% if item.allergens_note %}Allergens: {{ item.allergens_note }}{% endif %}</small>{% endif %}
         </div>
       {% endfor %}
@@ -74,21 +80,65 @@
       </section>
     {% elif request_form %}
       <section class="fb-panel" style="border-color:var(--ink);border-width:2px">
-        <h2 class="fb-panel__title">Request servings</h2>
+        <h2 class="fb-panel__title">Request food items</h2>
         {% if travel_note %}<div class="fb-callout fb-callout--leaf mb-3">{{ travel_note }}</div>{% endif %}
-        <form method="post" action="{% url 'core:request_create' listing.pk %}">
+
+        <!-- Custom Food-Wise Request Form -->
+        <form method="post" action="{% url 'core:request_create' listing.pk %}" id="food-request-form">
           {% csrf_token %}
-          <label class="form-label" for="{{ request_form.amount.id_for_label }}">{{ request_form.amount.label }}</label>
-          <input type="number" name="amount" id="{{ request_form.amount.id_for_label }}" class="form-control mb-1" min="1" max="{{ max_servings }}" required inputmode="numeric">
-          <div class="form-text mb-3">Up to {{ max_servings }}. {% if user.is_individual %}Individuals can ask for up to 10 servings at a time.{% else %}Your daily capacity is {{ user.profile.daily_capacity }}.{% endif %}</div>
-          <button type="submit" class="btn btn-fb-amber btn-lg-tap btn-block">Send request</button>
+          <input type="hidden" name="idempotency_key" id="req_idempotency_key">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold mb-2">Select quantity per item:</label>
+            <div class="fb-stack gap-2">
+              {% for itm in listing.items.all %}
+                <div class="p-2 border rounded bg-white">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="font-size:0.95rem">{{ itm.name }}</strong>
+                    <span class="small text-muted">Available: <b>{{ itm.remaining_quantity|floatformat:"-2" }}</b> {{ itm.unit }}</span>
+                  </div>
+                  <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-outline-secondary btn-step-down" data-target="item_qty_{{ itm.id }}">-</button>
+                    <input type="number" name="item_qty_{{ itm.id }}" id="item_qty_{{ itm.id }}"
+                           class="form-control text-center item-request-qty"
+                           value="0" min="0" max="{{ itm.remaining_quantity }}" step="1"
+                           data-item-name="{{ itm.name }}" data-unit="{{ itm.unit }}">
+                    <button type="button" class="btn btn-outline-secondary btn-step-up" data-target="item_qty_{{ itm.id }}" data-max="{{ itm.remaining_quantity }}">+</button>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="p-2 bg-light rounded mb-3 d-flex justify-content-between align-items-center">
+            <span>Total requested servings:</span>
+            <strong id="live-total-servings" class="h5 mb-0 text-primary">0</strong>
+          </div>
+
+          <div class="form-text mb-3">
+            Maximum total limit: <b>{{ max_servings }}</b> servings.
+            {% if user.is_individual %}Individual limit: 10 servings.{% endif %}
+          </div>
+
+          <!-- Review step modal trigger or direct send -->
+          <div class="d-flex flex-column gap-2">
+            <button type="submit" id="submit-request-btn" class="btn btn-fb-amber btn-lg-tap btn-block" disabled>
+              Send Request
+            </button>
+            <a href="{% url 'core:contact_hotel_for_listing' listing.pk %}" class="btn btn-fb-ghost btn-sm text-center">
+              {% icon "message" 16 %} Contact Hotel / Ask Questions
+            </a>
+          </div>
         </form>
       </section>
     {% elif my_request %}
       <section class="fb-panel">
         <h2 class="fb-panel__title">Your request</h2>
         <p>{{ my_request.amount }} servings {% request_status_badge my_request.status %}</p>
-        <a href="{% url 'core:my_requests' %}" class="btn btn-fb-primary btn-sm">Open my requests</a>
+        <div class="d-flex gap-2">
+          <a href="{% url 'core:my_requests' %}" class="btn btn-fb-primary btn-sm">Open my requests</a>
+          <a href="{% url 'core:conversation_detail' my_request.conversations.first.pk|default:0 %}" class="btn btn-fb-outline btn-sm">{% icon "message" 16 %}Chat</a>
+        </div>
       </section>
     {% elif not user.is_authenticated and listing.is_live %}
       <section class="fb-panel">
@@ -112,4 +162,74 @@
   </aside>
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/safe-until.js' %}"></script>{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/safe-until.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const inputs = document.querySelectorAll(".item-request-qty");
+  const totalDisplay = document.getElementById("live-total-servings");
+  const submitBtn = document.getElementById("submit-request-btn");
+  const maxAllowed = {{ max_servings|default:100 }};
+  const keyInput = document.getElementById("req_idempotency_key");
+
+  if (keyInput) {
+    keyInput.value = 'req-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function updateTotal() {
+    let sum = 0;
+    inputs.forEach(input => {
+      let val = parseFloat(input.value) || 0;
+      if (val < 0) val = 0;
+      sum += val;
+    });
+    if (totalDisplay) {
+      totalDisplay.textContent = sum;
+    }
+    if (submitBtn) {
+      if (sum > 0 && sum <= maxAllowed) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = `Send Request (${sum} servings)`;
+      } else if (sum > maxAllowed) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = `Exceeds max (${maxAllowed})`;
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Select at least 1 item';
+      }
+    }
+  }
+
+  inputs.forEach(input => {
+    input.addEventListener("input", updateTotal);
+  });
+
+  document.querySelectorAll(".btn-step-up").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const targetId = this.getAttribute("data-target");
+      const maxVal = parseFloat(this.getAttribute("data-max")) || 9999;
+      const inp = document.getElementById(targetId);
+      let cur = parseFloat(inp.value) || 0;
+      if (cur < maxVal) {
+        inp.value = cur + 1;
+        updateTotal();
+      }
+    });
+  });
+
+  document.querySelectorAll(".btn-step-down").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const targetId = this.getAttribute("data-target");
+      const inp = document.getElementById(targetId);
+      let cur = parseFloat(inp.value) || 0;
+      if (cur > 0) {
+        inp.value = cur - 1;
+        updateTotal();
+      }
+    });
+  });
+
+  updateTotal();
+});
+</script>
+{% endblock %}

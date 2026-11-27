@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load fb_extras static %}
+{% block title %}Manage Pickup Location: FoodBridge{% endblock %}
+{% block content %}
+<div class="fb-page__head">
+  <div>
+    <h1>Pickup Location</h1>
+    <p class="fb-lede">Set the exact address and map pin where recipients will collect surplus food.</p>
+  </div>
+  <a href="{% url 'core:hotel_dashboard' %}" class="btn btn-fb-outline btn-sm">Back to Dashboard</a>
+</div>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="fb-panel">
+      <h2 class="h5 mb-3">Location Details</h2>
+      <form method="post" action="{% url 'core:hotel_location_manage' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-bold" for="id_address">Pickup Address <span class="text-danger">*</span></label>
+          <input type="text" id="id_address" name="address" value="{{ profile.address }}" required class="form-control" placeholder="Search with Google Places or type address...">
+        </div>
+        
+        <div class="row g-2 mb-3">
+          <div class="col-md-5">
+            <label class="form-label" for="id_city">City</label>
+            <input type="text" id="id_city" name="city" value="{{ profile.city }}" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="id_state">State</label>
+            <input type="text" id="id_state" name="state" value="{{ profile.state }}" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="id_postal_code">Postal code</label>
+            <input type="text" id="id_postal_code" name="postal_code" value="{{ profile.postal_code }}" class="form-control">
+          </div>
+        </div>
+
+        <input type="hidden" id="id_latitude" name="latitude" value="{{ profile.latitude|default_if_none:'' }}">
+        <input type="hidden" id="id_longitude" name="longitude" value="{{ profile.longitude|default_if_none:'' }}">
+        <input type="hidden" id="id_google_place_id" name="google_place_id" value="{{ profile.google_place_id }}">
+
+        <div class="d-flex align-items-center gap-2 mt-4">
+          <button type="submit" class="btn btn-fb-primary">Confirm Pickup Location</button>
+          <a href="{% url 'core:hotel_dashboard' %}" class="btn btn-fb-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="fb-panel">
+      <h2 class="h5 mb-2">Pin on Map</h2>
+      <p class="small text-muted mb-2">Drag the pin to adjust your precise pickup gate or entrance.</p>
+      <div id="fb-pin-map" class="fb-map" style="height: 350px;"></div>
+      <div class="mt-2 small text-muted">
+        {% if profile.has_pin %}
+          Current coordinates: <b>{{ profile.latitude|floatformat:4 }}, {{ profile.longitude|floatformat:4 }}</b>
+        {% else %}
+          <i>No pin set yet. Search an address or click the map to place a pin.</i>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/maps-pin.js' %}"></script>
+{% if GOOGLE_MAPS_BROWSER_API_KEY %}
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_BROWSER_API_KEY }}&libraries=places&callback=fbInitPinMap" async defer></script>
+{% endif %}
+{% endblock %}

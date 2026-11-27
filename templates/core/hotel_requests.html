@@ -2,7 +2,13 @@
 {% load fb_extras static %}
 {% block title %}Requests: FoodBridge{% endblock %}
 {% block content %}
-<div class="fb-page__head"><div><h1>Requests</h1><p class="fb-lede">Confirm who collects, then check their code at the door.</p></div></div>
+<div class="fb-page__head">
+  <div>
+    <h1>Requests</h1>
+    <p class="fb-lede">Confirm who collects, track live incoming pickups, then verify code at the door.</p>
+  </div>
+  <a href="{% url 'core:hotel_location_manage' %}" class="btn btn-fb-outline btn-sm">{% icon "location" 16 %}Manage Pickup Location</a>
+</div>
 
 <h2 class="mb-3">Waiting on your decision</h2>
 {% if incoming %}
@@ -18,9 +24,25 @@
         <div class="fb-docket__servings"><b>{{ r.amount }}</b><small>servings</small></div>
       </div>
       <p class="mb-2 mt-2 fb-muted">From <a href="{% url 'core:listing_detail' r.listing_id %}">{{ r.listing.display_title }}</a> · {{ r.listing.servings_available }} still unclaimed</p>
+      
+      <!-- Food-wise items list -->
+      <div class="mb-3 p-2 bg-light rounded" style="font-size:0.9rem">
+        <strong class="d-block mb-1 text-dark">Requested Items:</strong>
+        <div class="d-flex flex-wrap gap-2">
+          {% for itm in r.items.all %}
+            <span class="badge bg-white text-dark border">
+              {{ itm.food_item.name }}: <b>{{ itm.requested_quantity }} {{ itm.food_item.unit }}</b>
+              {% if itm.status != 'pending' %}({{ itm.get_status_display }}){% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+
       <div class="fb-row">
-        <form method="post" action="{% url 'core:request_confirm' r.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-primary">{% icon "check" 18 %}Confirm request</button></form>
-        <a href="{% url 'core:request_reject' r.pk %}" class="btn btn-fb-ghost">Decline</a>
+        <a href="{% url 'core:hotel_decide_request' r.pk %}" class="btn btn-fb-primary">{% icon "check" 18 %}Review & Decide Items</a>
+        <form method="post" action="{% url 'core:request_confirm' r.pk %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-fb-outline btn-sm">Quick Confirm All</button></form>
+        <a href="{% url 'core:conversation_detail' r.conversations.first.pk|default:0 %}" class="btn btn-fb-ghost btn-sm">{% icon "message" 16 %}Chat</a>
+        <a href="{% url 'core:request_reject' r.pk %}" class="btn btn-fb-ghost text-danger btn-sm">Decline</a>
       </div>
     </div>
   {% endfor %}
@@ -33,7 +55,7 @@
 {% if in_progress %}
   <div class="fb-stack">
   {% for r in in_progress %}
-    <div class="fb-panel">
+    <div class="fb-panel" id="req-card-{{ r.pk }}">
       <div class="fb-row fb-row--between">
         <div><strong style="font-size:1.1rem">{{ r.recipient_name }}</strong> {% request_status_badge r.status %}
           <div class="fb-muted fb-small">{{ r.amount }} servings from {{ r.listing.display_title }}{% if r.status == "on_the_way" and r.eta_minutes %} · about {{ r.eta_minutes }} min away{% endif %}</div></div>
@@ -42,8 +64,22 @@
       <ol class="fb-track">
         <li class="is-done">Requested</li><li class="is-done">Confirmed</li><li class="{% if r.status == 'on_the_way' %}is-now{% endif %}">On the way</li><li>Collected</li>
       </ol>
+
+      <!-- Live GPS Tracking Section for Hotel -->
+      <div class="hotel-live-tracking-box p-3 my-3 bg-light border rounded" data-request-id="{{ r.pk }}" style="display:none">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <span class="badge bg-primary me-2 trk-status-badge">Live Tracking</span>
+            <span class="trk-dist-eta text-muted small">Checking distance...</span>
+          </div>
+          <span class="trk-last-update text-muted small">--</span>
+        </div>
+        <div class="hotel-tracking-map fb-map mb-2" id="hotel-map-{{ r.pk }}" style="height: 250px;"></div>
+      </div>
+
       <div class="fb-row">
         <a href="{% url 'core:confirm_handover' r.pk %}" class="btn btn-fb-amber">{% icon "lock" 18 %}Enter pickup code</a>
+        <a href="{% url 'core:conversation_detail' r.conversations.first.pk|default:0 %}" class="btn btn-fb-outline btn-sm">{% icon "message" 16 %}Chat</a>
         <form method="post" action="{% url 'core:request_cancel' r.pk %}" onsubmit="return confirm('Cancel this confirmed pickup? The servings go back on the listing.');">{% csrf_token %}<input type="hidden" name="reason" value="Cancelled by the hotel"><button type="submit" class="btn btn-fb-ghost">Cancel pickup</button></form>
       </div>
     </div>
@@ -53,4 +89,10 @@
   {% include "partials/empty_state.html" with icon="check" title="No pickups in progress" body="Confirmed requests wait here until the recipient shows their code." %}
 {% endif %}
 {% endblock %}
-{% block extra_js %}<script src="{% static 'js/safe-until.js' %}"></script>{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/safe-until.js' %}"></script>
+<script src="{% static 'js/hotel-tracking-poll.js' %}"></script>
+{% if GOOGLE_MAPS_BROWSER_API_KEY %}
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_BROWSER_API_KEY }}&libraries=geometry&callback=fbInitHotelTrackingMaps" async defer></script>
+{% endif %}
+{% endblock %}

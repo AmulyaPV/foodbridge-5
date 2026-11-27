@@ -10,14 +10,26 @@ from core.models import FoodListing, ListingStatus, PickupRequest, RequestStatus
 
 
 def summary():
-    """The headline numbers the report promises: listings created, donations collected, servings redistributed."""
+    """The headline numbers the report promises: listings created, donations collected, servings redistributed,
+    allocated vs remaining servings, and conversations count."""
     collected = PickupRequest.objects.filter(status=RequestStatus.COLLECTED)
+    total_posted = FoodListing.objects.aggregate(total=Sum("total_servings"))["total"] or 0
+    total_avail = FoodListing.objects.filter(status=ListingStatus.POSTED).aggregate(avail=Sum("servings_available"))["avail"] or 0
+    total_allocated = total_posted - total_avail if total_posted >= total_avail else 0
+
+    from core.models import Conversation
+    total_convs = Conversation.objects.count()
+
     return {
         "listings_created": FoodListing.objects.count(),
         "listings_live": FoodListing.objects.filter(status=ListingStatus.POSTED).count(),
         "listings_expired": FoodListing.objects.filter(status=ListingStatus.EXPIRED).count(),
         "donations_collected": collected.count(),
         "servings_redistributed": collected.aggregate(total=Sum("amount"))["total"] or 0,
+        "servings_posted": total_posted,
+        "servings_allocated": total_allocated,
+        "servings_remaining": total_avail,
+        "total_conversations": total_convs,
         "requests_total": PickupRequest.objects.count(),
         "requests_open": PickupRequest.objects.filter(status__in=RequestStatus.active()).count(),
     }

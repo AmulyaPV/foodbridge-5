@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import tracking_views
 
 app_name = "core"
 
@@ -34,4 +35,22 @@ urlpatterns = [
     path("needs/", views.needs_board, name="needs_board"),
     path("needs/<int:pk>/close/", views.need_close, name="need_close"),
     path("notifications/", views.notifications, name="notifications"),
+
+    # Messaging & Partial Decisions
+    path("messages/", views.conversation_list, name="conversation_list"),
+    path("messages/<int:pk>/", views.conversation_detail, name="conversation_detail"),
+    path("messages/<int:pk>/send/", views.api_send_message, name="api_send_message"),
+    path("messages/<int:pk>/poll/", views.api_poll_messages, name="api_poll_messages"),
+    path("food/<int:pk>/contact/", views.contact_hotel_for_listing, name="contact_hotel_for_listing"),
+    path("requests/<int:pk>/propose-time/", views.propose_pickup_time, name="propose_pickup_time"),
+    path("hotel/requests/<int:pk>/decide/", views.hotel_decide_request, name="hotel_decide_request"),
+    path("ngo/requests/<int:pk>/proposal/", views.recipient_review_proposal, name="recipient_review_proposal"),
+
+    # Directions, Location Management & Live GPS Tracking
+    path("hotel/location/", tracking_views.hotel_location_manage, name="hotel_location_manage"),
+    path("requests/<int:pk>/directions/", tracking_views.request_directions, name="request_directions"),
+    path("api/requests/<int:pk>/tracking/start/", tracking_views.api_start_tracking, name="api_start_tracking"),
+    path("api/requests/<int:pk>/tracking/location/", tracking_views.api_update_location, name="api_update_location"),
+    path("api/requests/<int:pk>/tracking/stop/", tracking_views.api_stop_tracking, name="api_stop_tracking"),
+    path("api/requests/<int:pk>/tracking/status/", tracking_views.api_tracking_status, name="api_tracking_status"),
 ]

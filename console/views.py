@@ -20,6 +20,7 @@ RECIPIENT_ROLES = [Role.HOTEL, Role.NGO, Role.INDIVIDUAL]
 @admin_required
 def dashboard(request):
     pending = User.objects.filter(verification_status=Verification.PENDING).exclude(role=Role.ADMIN)
+    rep_summary = reports.summary()
     context = {
         "pending_count": pending.count(),
         "hotel_count": User.objects.filter(role=Role.HOTEL, verification_status=Verification.APPROVED).count(),
@@ -29,6 +30,7 @@ def dashboard(request):
         "live_listings": FoodListing.objects.filter(status=ListingStatus.POSTED).count(),
         "locked_count": HandoverCode.objects.filter(status=CodeStatus.LOCKED).count(),
         "recent_activity": ActivityLog.objects.select_related("actor")[:12],
+        "summary": rep_summary,
     }
     return render(request, "console/dashboard.html", context)
 

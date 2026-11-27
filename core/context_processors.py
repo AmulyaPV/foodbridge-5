@@ -15,6 +15,17 @@ def site(request):
     user = getattr(request, "user", None)
     if user is not None and user.is_authenticated:
         context["unread_notifications"] = user.notifications.filter(is_read=False).count()
+        # Unread messages count
+        from core.models import ConversationParticipant, Message
+        user_conv_ids = ConversationParticipant.objects.filter(user=user, is_blocked=False).values_list("conversation_id", flat=True)
+        unread_msg_count = 0
+        for p in ConversationParticipant.objects.filter(user=user, is_blocked=False):
+            qs = Message.objects.filter(conversation_id=p.conversation_id).exclude(sender=user)
+            if p.last_read_at:
+                qs = qs.filter(created_at__gt=p.last_read_at)
+            unread_msg_count += qs.count()
+        context["unread_messages"] = unread_msg_count
+
         if user.role == Role.HOTEL and user.is_verified and getattr(user, "hotel_profile", None):
             from core.models import PickupRequest, RequestStatus
 

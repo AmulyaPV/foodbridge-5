@@ -21,6 +21,31 @@
         {% request_status_badge r.status %}
       </div>
 
+      <!-- Food-wise items list -->
+      <div class="mb-3 p-2 bg-light rounded" style="font-size:0.9rem">
+        <strong class="d-block mb-1 text-dark">Items in this request:</strong>
+        <div class="d-flex flex-wrap gap-2">
+          {% for itm in r.items.all %}
+            <span class="badge bg-white text-dark border">
+              {{ itm.food_item.name }}: <b>{{ itm.requested_quantity }} {{ itm.food_item.unit }}</b>
+              {% if itm.proposed_quantity and itm.proposed_quantity != itm.requested_quantity %}
+                → <i>Proposed: {{ itm.proposed_quantity }}</i>
+              {% endif %}
+              ({{ itm.get_status_display }})
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if r.status == "revision_proposed" %}
+        <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Revised Quantities Proposed!</strong> The donor suggested changes to your requested amounts.
+          </div>
+          <a href="{% url 'core:recipient_review_proposal' r.pk %}" class="btn btn-sm btn-primary">Review Proposal</a>
+        </div>
+      {% endif %}
+
       {% if r.step_index >= 0 %}
       <ol class="fb-track">
         <li class="{% if r.step_index > 0 %}is-done{% elif r.step_index == 0 %}is-now{% endif %}">Requested</li>
@@ -32,13 +57,15 @@
         <p class="fb-callout fb-callout--chilli mt-3 mb-0"><b>{% if r.status == "rejected" %}Declined{% else %}Cancelled{% endif %}</b>{{ r.reject_reason|default:r.cancel_reason }}</p>
       {% endif %}
 
-      {% if r.status == "confirmed" or r.status == "on_the_way" %}
+      {% if r.status == "confirmed" or r.status == "partially_approved" or r.status == "on_the_way" %}
         <p class="mb-2"><b>Collect from:</b> {{ r.listing.location_text }} · {{ r.listing.contact_number }}</p>
         <div class="mb-2">{% include "partials/clock.html" with listing=r.listing %}</div>
         {% include "partials/handover_code_card.html" %}
         <div class="fb-row">
-          <a href="{% if r.listing.hotel.has_pin %}https://www.google.com/maps/dir/?api=1&destination={{ r.listing.hotel.latitude }},{{ r.listing.hotel.longitude }}{% else %}https://www.google.com/maps/search/?api=1&query={{ r.listing.location_text|urlencode }}{% endif %}" target="_blank" rel="noopener" class="btn btn-fb-outline btn-sm">{% icon "route" 18 %}Directions</a>
-          {% if r.status == "confirmed" %}
+          <a href="{% url 'core:request_directions' r.pk %}" class="btn btn-fb-primary btn-sm">{% icon "route" 18 %}Directions & GPS</a>
+          <a href="{% if r.listing.hotel.has_pin %}https://www.google.com/maps/dir/?api=1&destination={{ r.listing.hotel.latitude }},{{ r.listing.hotel.longitude }}{% else %}https://www.google.com/maps/search/?api=1&query={{ r.listing.location_text|urlencode }}{% endif %}" target="_blank" rel="noopener" class="btn btn-fb-outline btn-sm">Google Maps</a>
+          <a href="{% url 'core:conversation_detail' r.conversations.first.pk|default:0 %}" class="btn btn-fb-outline btn-sm">{% icon "message" 16 %}Chat</a>
+          {% if r.status == "confirmed" or r.status == "partially_approved" %}
             <form method="post" action="{% url 'core:mark_on_the_way' r.pk %}" class="fb-row" style="gap:.4rem">
               {% csrf_token %}
               <input type="number" name="eta_minutes" min="1" max="240" required placeholder="Minutes away" aria-label="Minutes away" class="form-control" style="width:9.5rem;min-height:38px">
@@ -47,8 +74,11 @@
           {% else %}<span class="fb-muted fb-small">You told the hotel you're about {{ r.eta_minutes }} min away.</span>{% endif %}
           <form method="post" action="{% url 'core:request_cancel' r.pk %}" onsubmit="return confirm('Cancel this pickup?');">{% csrf_token %}<button type="submit" class="btn btn-fb-ghost btn-sm">Cancel</button></form>
         </div>
-      {% elif r.status == "requested" %}
-        <form method="post" action="{% url 'core:request_cancel' r.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-ghost btn-sm">Cancel request</button></form>
+      {% elif r.status == "requested" or r.status == "revision_proposed" %}
+        <div class="fb-row">
+          <a href="{% url 'core:conversation_detail' r.conversations.first.pk|default:0 %}" class="btn btn-fb-outline btn-sm">{% icon "message" 16 %}Chat with Donor</a>
+          <form method="post" action="{% url 'core:request_cancel' r.pk %}">{% csrf_token %}<button type="submit" class="btn btn-fb-ghost btn-sm">Cancel request</button></form>
+        </div>
       {% endif %}
     </div>
   {% endfor %}

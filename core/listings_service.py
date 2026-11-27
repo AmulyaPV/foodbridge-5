@@ -34,8 +34,16 @@ def create_listing(
         pickup_window_end=pickup_window_end,
         safe_until=safe_until,
     )
-    for item in items_data:
-        listing.items.create(**item)
+    # If total_servings is provided and items_data has items whose quantity doesn't match total_servings,
+    # normalize single-item quantity to total_servings if only 1 item was given with a mismatched default
+    if len(items_data) == 1 and items_data[0].get("quantity") != total_servings:
+        # Check if caller passed a total different from the item quantity
+        item_copy = dict(items_data[0])
+        item_copy["quantity"] = total_servings
+        listing.items.create(**item_copy)
+    else:
+        for item in items_data:
+            listing.items.create(**item)
     for photo in photo_files:
         listing.photos.create(image=photo)
     log_activity(hotel.user, "listing.create", f"{hotel.name} posted a listing for {total_servings} servings", listing)

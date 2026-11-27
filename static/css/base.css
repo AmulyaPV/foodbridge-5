@@ -625,3 +625,25 @@ body { background: #f6f8f3 !important; color: #183b2b !important; }
   .fb-hero h1 { font-size: clamp(2rem, 9vw, 2.8rem) !important; }
   .fb-hero__cta .btn { width: 100%; }
 }
+
+/* Touch targets & responsive layout for mobile */
+@media (max-width: 767.98px) {
+  button, .btn, a.btn, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding: 0.35rem 0.75rem;
+  }
+  .fb-tabbar a {
+    min-height: 48px;
+  }
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

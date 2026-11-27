@@ -143,6 +143,13 @@ def confirm_handover(pickup_request_id, entered_code, actor, ip=None):
             request.collected_at = now
             request.save(update_fields=["status", "collected_at"])
             _record(handover, actor, AttemptOutcome.SUCCESS, ip)
+
+            # Stop live tracking session on completed handover
+            from core.tracking_service import stop_tracking_session
+            try:
+                stop_tracking_session(request.pk, actor, reason="completed")
+            except Exception:
+                pass
             log_activity(actor, "pickup.collected", f"Handover confirmed for pickup #{request.pk}", request)
         else:
             handover.failed_attempts += 1

@@ -6,6 +6,7 @@ Everything you may want to change comes from environment variables or a .env fil
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 from django.contrib.messages import constants as message_constants
 
@@ -32,7 +33,10 @@ def env_bool(name, default=False):
 
 
 def env_list(name, default=""):
-    return [item.strip() for item in os.environ.get(name, default).split(",") if item.strip()]
+    val = os.environ.get(name)
+    if val is None or not val.strip():
+        val = default
+    return [item.strip() for item in val.split(",") if item.strip()]
 
 
 TESTING = "test" in sys.argv
@@ -42,8 +46,37 @@ DEBUG = env_bool("DEBUG", True)
 SECRET_KEY = os.environ.get("SECRET_KEY") or ("dev-only-insecure-key" if DEBUG else "")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY must be set (in .env or the environment) when DEBUG is off.")
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
+
+# Render & Host configuration
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver")
+render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
+
+# CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+if render_hostname:
+    render_origin = f"https://{render_hostname}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
+# Production security & cookies
+if not DEBUG and not TESTING:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False  # Allows client JS to read csrf cookie for AJAX
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+else:
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_HTTPONLY = False
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -89,9 +122,27 @@ TEMPLATES = [
     },
 ]
 
-# --- Database: SQLite by default, MySQL / PostgreSQL by changing DB_ENGINE ------
-DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").strip().lower()
-if DB_ENGINE == "mysql":
+# --- Database ---------------------------------------------------------------
+# Support DATABASE_URL (e.g. Render Postgres), DB_ENGINE, or fallback SQLite
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+DB_ENGINE = os.environ.get("DB_ENGINE", "").strip().lower()
+
+if DATABASE_URL:
+    parsed_db = urlparse(DATABASE_URL)
+    # Convert postgres:// or postgresql://
+    engine_name = "django.db.backends.postgresql"
+    DATABASES = {
+        "default": {
+            "ENGINE": engine_name,
+            "NAME": parsed_db.path.lstrip("/"),
+            "USER": parsed_db.username or "",
+            "PASSWORD": parsed_db.password or "",
+            "HOST": parsed_db.hostname or "127.0.0.1",
+            "PORT": str(parsed_db.port or 5432),
+            "CONN_MAX_AGE": 600,
+        }
+    }
+elif DB_ENGINE == "mysql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -112,6 +163,7 @@ elif DB_ENGINE in {"postgres", "postgresql"}:
             "PASSWORD": os.environ.get("DB_PASSWORD", ""),
             "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
             "PORT": os.environ.get("DB_PORT", "5432"),
+            "CONN_MAX_AGE": 600,
         }
     }
 else:
@@ -119,8 +171,6 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
-            # IMMEDIATE makes SQLite take its write lock at the start of a transaction,
-            # so two people approving at once queue up instead of failing half-way.
             "OPTIONS": {"timeout": 20, "transaction_mode": "IMMEDIATE"},
         }
     }
@@ -157,12 +207,12 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage" if TESTING else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
-MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "5"))
+MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB") or "5")
 
 # --- Messages (map Django's "error" level to Bootstrap's "danger") ---------------------
 MESSAGE_TAGS = {message_constants.ERROR: "danger"}
@@ -172,4 +222,43 @@ EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.conso
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "FoodBridge <noreply@foodbridge.local>")
 
 # --- Google Maps (optional) --------------------------------------------------------------
-GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
+GOOGLE_MAPS_BROWSER_API_KEY = (
+    os.environ.get("GOOGLE_MAPS_BROWSER_API_KEY")
+    or os.environ.get("GOOGLE_MAPS_API_KEY")
+    or ""
+).strip()
+GOOGLE_MAPS_SERVER_API_KEY = (
+    os.environ.get("GOOGLE_MAPS_SERVER_API_KEY")
+    or os.environ.get("GOOGLE_MAPS_API_KEY")
+    or ""
+).strip()
+GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_BROWSER_API_KEY
+
+# --- Structured Logging -----------------------------------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[%(asctime)s] [%(levelname)s] [%(name)s:%(lineno)d] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "core": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+    },
+}

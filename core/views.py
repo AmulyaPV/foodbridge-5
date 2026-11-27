@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -45,6 +46,16 @@ from .models import (
 from .moderation_service import report_listing
 from .requests_service import cancel_request, confirm_request, create_request, reject_request, safe_until_check
 from .requests_service import mark_on_the_way as mark_on_the_way_service
+from .messaging_views import (
+    api_poll_messages,
+    api_send_message,
+    contact_hotel_for_listing,
+    conversation_detail,
+    conversation_list,
+    hotel_decide_request,
+    propose_pickup_time,
+    recipient_review_proposal,
+)
 
 
 def _as_aware(value):
@@ -61,7 +72,8 @@ def landing(request):
     verified = User.objects.filter(verification_status=Verification.APPROVED)
     collected = PickupRequest.objects.filter(status=RequestStatus.COLLECTED)
     live_listings = list(
-        FoodListing.objects.filter(status=ListingStatus.POSTED)
+        FoodListing.objects.filter(status__in=[ListingStatus.POSTED, ListingStatus.FULFILLED])
+        .filter(servings_available__gt=0)
         .select_related("hotel")
         .prefetch_related("items", "requests", "photos")
         .order_by("-created_at")[:6]
@@ -237,11 +249,13 @@ def listing_repost(request, pk):
 @hotel_required
 def hotel_requests(request):
     profile = request.user.profile
-    base = PickupRequest.objects.filter(listing__hotel=profile).select_related(
-        "listing", "ngo", "individual", "handover"
+    base = (
+        PickupRequest.objects.filter(listing__hotel=profile)
+        .select_related("listing", "ngo", "individual", "handover")
+        .prefetch_related("items__food_item")
     )
-    incoming = base.filter(status=RequestStatus.REQUESTED)
-    in_progress = base.filter(status__in=[RequestStatus.CONFIRMED, RequestStatus.ON_THE_WAY])
+    incoming = base.filter(status__in=[RequestStatus.REQUESTED, RequestStatus.REVISION_PROPOSED])
+    in_progress = base.filter(status__in=[RequestStatus.CONFIRMED, RequestStatus.PARTIALLY_APPROVED, RequestStatus.ON_THE_WAY])
     return render(request, "core/hotel_requests.html", {"incoming": incoming, "in_progress": in_progress})
 
 
@@ -404,7 +418,8 @@ def ngo_dashboard(request):
     """Browse live food. Shared by NGOs and individual recipients."""
     profile = request.user.profile
     listings = list(
-        FoodListing.objects.filter(status=ListingStatus.POSTED)
+        FoodListing.objects.filter(status__in=[ListingStatus.POSTED, ListingStatus.FULFILLED])
+        .filter(servings_available__gt=0)
         .select_related("hotel")
         .prefetch_related("items", "requests", "photos")
     )
@@ -555,15 +570,38 @@ def request_create(request, pk):
     profile = request.user.profile
     listing = get_object_or_404(FoodListing, pk=pk)
     if request.method == "POST":
-        form = PickupRequestForm(request.POST)
-        if form.is_valid():
+        idempotency_key = request.POST.get("idempotency_key", "").strip() or None
+        # Check if item-wise quantities were submitted
+        item_quantities = {}
+        for key, val in request.POST.items():
+            if key.startswith("item_qty_"):
+                try:
+                    item_id = int(key.replace("item_qty_", ""))
+                    qty = Decimal(val or "0")
+                    if qty > 0:
+                        item_quantities[item_id] = qty
+                except (ValueError, TypeError):
+                    continue
+
+        amount = None
+        if not item_quantities:
+            # Fallback to single amount
             try:
-                create_request(listing, profile, form.cleaned_data["amount"])
-                messages.success(request, "Request sent. You'll be notified when the hotel responds.")
-            except FoodBridgeError as error:
-                messages.error(request, str(error))
-        else:
-            messages.error(request, "Enter a whole number of servings, 1 or more.")
+                amount = int(request.POST.get("amount", "0"))
+            except ValueError:
+                amount = 0
+
+        try:
+            create_request(
+                listing,
+                profile,
+                amount=amount,
+                item_quantities=item_quantities if item_quantities else None,
+                idempotency_key=idempotency_key,
+            )
+            messages.success(request, "Request sent. You'll be notified when the hotel responds.")
+        except FoodBridgeError as error:
+            messages.error(request, str(error))
     return redirect("core:listing_detail", pk=pk)
 
 
@@ -575,7 +613,9 @@ def my_requests(request):
     profile = request.user.profile
     owner = {"ngo": profile} if request.user.is_ngo else {"individual": profile}
     everything = list(
-        PickupRequest.objects.filter(**owner).select_related("listing", "listing__hotel", "handover")
+        PickupRequest.objects.filter(**owner)
+        .select_related("listing", "listing__hotel", "handover")
+        .prefetch_related("items__food_item")
     )
     view = request.GET.get("view", "active")
     if view not in ("active", "history"):

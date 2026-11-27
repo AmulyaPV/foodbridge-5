@@ -6,6 +6,13 @@ from core.reliability import reliability_percent as _reliability_percent
 
 register = template.Library()
 
+@register.simple_tag
+def listing_inventory(listing):
+    """Returns the unified inventory breakdown for a listing."""
+    from core.inventory_service import get_listing_inventory
+    return get_listing_inventory(listing)
+
+
 # label and colour for each account verification state
 VERIFICATION = {
     "pending": ("Pending verification", "amber"),
@@ -24,6 +31,8 @@ def verification_badge(status):
 # label and colour for each pickup-request status
 REQUEST_STATUS = {
     "requested": ("Requested", "amber"),
+    "revision_proposed": ("Revision Proposed", "amber"),
+    "partially_approved": ("Partially Approved", "blue"),
     "confirmed": ("Confirmed", "green"),
     "rejected": ("Declined", "red"),
     "on_the_way": ("On the way", "blue"),
@@ -39,9 +48,10 @@ def request_status_badge(status):
     return format_html('<span class="fb-badge fb-badge--{}">{}</span>', colour, label)
 
 
-# the listing words used in the project report: available, requested, confirmed, collected, expired
+# the listing words used in the project report: available, partially_allocated, requested, confirmed, collected, expired
 LISTING_STATUS_COLOUR = {
     "available": "green",
+    "partially_allocated": "blue",
     "requested": "amber",
     "confirmed": "blue",
     "collected": "green",

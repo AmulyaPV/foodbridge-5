@@ -1,9 +1,17 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
 
+
+def healthz(request):
+    """Health check endpoint for Render and monitoring."""
+    return HttpResponse("OK", content_type="text/plain; charset=utf-8")
+
+
 urlpatterns = [
+    path("healthz/", healthz, name="healthz"),
     path("django-admin/", admin.site.urls),  # raw database admin, kept as a backup tool
     path("manage/", include("console.urls")),  # FoodBridge admin console
     path("", include("accounts.urls")),

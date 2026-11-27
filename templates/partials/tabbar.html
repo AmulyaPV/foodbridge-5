@@ -3,12 +3,14 @@
   {% if user.is_hotel and user.is_verified %}
     <a href="{% url 'core:hotel_dashboard' %}" class="{% if url == 'hotel_dashboard' %}is-active{% endif %}">{% icon "list" %}Listings</a>
     <a href="{% url 'core:hotel_requests' %}" class="{% if url == 'hotel_requests' %}is-active{% endif %}">{% icon "inbox" %}Requests{% if pending_requests %}<span class="fb-count">{{ pending_requests }}</span>{% endif %}</a>
+    <a href="{% url 'core:conversation_list' %}" class="{% if url == 'conversation_list' or url == 'conversation_detail' %}is-active{% endif %}">{% icon "message" %}Chat{% if unread_messages %}<span class="fb-count">{{ unread_messages }}</span>{% endif %}</a>
     <a href="{% url 'core:listing_create' %}" class="fb-tabbar__post"><span class="fb-plus">{% icon "plus" 24 %}</span>Post</a>
     <a href="{% url 'core:needs_board' %}" class="{% if url == 'needs_board' %}is-active{% endif %}">{% icon "board" %}Needs</a>
     <a href="{% url 'core:notifications' %}" class="{% if url == 'notifications' %}is-active{% endif %}">{% icon "bell" %}Alerts{% if unread_notifications %}<span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
   {% elif user.is_recipient and user.is_verified %}
     <a href="{% url 'core:ngo_dashboard' %}" class="{% if url == 'ngo_dashboard' or url == 'listing_detail' %}is-active{% endif %}">{% icon "search" %}Find food</a>
     <a href="{% url 'core:my_requests' %}" class="{% if url == 'my_requests' %}is-active{% endif %}">{% icon "inbox" %}Requests</a>
+    <a href="{% url 'core:conversation_list' %}" class="{% if url == 'conversation_list' or url == 'conversation_detail' %}is-active{% endif %}">{% icon "message" %}Chat{% if unread_messages %}<span class="fb-count">{{ unread_messages }}</span>{% endif %}</a>
     {% if user.is_ngo %}<a href="{% url 'core:needs_board' %}" class="{% if url == 'needs_board' %}is-active{% endif %}">{% icon "board" %}Needs</a>{% endif %}
     <a href="{% url 'core:notifications' %}" class="{% if url == 'notifications' %}is-active{% endif %}">{% icon "bell" %}Alerts{% if unread_notifications %}<span class="fb-count">{{ unread_notifications }}</span>{% endif %}</a>
   {% elif user.is_admin_role %}
